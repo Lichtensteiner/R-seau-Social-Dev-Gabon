@@ -1,0 +1,286 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required, immutable) - The user's unique ID
+    //   - displayName: string (required) - The user's full name
+    //   - email: string (required, immutable) - The user's email address
+    //   - photoURL: string (optional) - URL to the user's profile picture
+    //   - bio: string (optional) - A short biography
+    //   - skills: list (optional) - List of technical skills
+    //   - location: string (optional) - City or region in Gabon
+    //   - githubUrl: string (optional) - Link to GitHub profile
+    //   - role: string (required) - User role ('dev', 'recruiter', 'admin')
+    //   - createdAt: timestamp (required, immutable) - Account creation timestamp
+    //
+    // Collection: posts
+    // Document ID: {postId}
+    // Fields:
+    //   - authorId: string (required, immutable) - UID of the author
+    //   - authorName: string (required) - Display name of the author
+    //   - authorPhoto: string (optional) - Photo URL of the author
+    //   - content: string (required) - Text content of the post
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //   - likes: list (required) - Array of user UIDs who liked the post
+    //   - commentsCount: number (required) - Number of comments
+    //
+    // Collection: jobs
+    // Document ID: {jobId}
+    // Fields:
+    //   - authorId: string (required, immutable) - UID of the recruiter/author
+    //   - companyName: string (required) - Name of the company
+    //   - title: string (required) - Job title
+    //   - type: string (required) - Contract type ('CDI', 'CDD', 'Stage', 'Freelance')
+    //   - location: string (required) - Job location
+    //   - description: string (required) - Detailed job description
+    //   - skills: list (optional) - Required skills
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.authorId;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+             (request.resource.data[field] is string &&
+              request.resource.data[field].size() >= minLen &&
+              request.resource.data[field].size() <= maxLen);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidList(listField, maxSize) {
+      return !(listField in request.resource.data) || (request.resource.data[listField] is list && request.resource.data[listField].size() <= maxSize);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "ludo.consulting3@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'followers', 'following']) &&
+             validStringLength('uid', 1, 128) &&
+             validStringLength('displayName', 1, 100) &&
+             isValidOptionalString('firstName', 0, 100) &&
+             isValidOptionalString('lastName', 0, 100) &&
+             isValidOptionalString('pseudo', 0, 100) &&
+             isValidEmail(data.email) &&
+             isValidOptionalString('photoURL', 0, 2000) &&
+             isValidOptionalString('bio', 0, 1000) &&
+             isValidList('skills', 50) &&
+             isValidOptionalString('location', 0, 100) &&
+             isValidOptionalString('status', 0, 50) &&
+             (!('experienceYears' in data) || data.experienceYears is number) &&
+             isValidOptionalString('githubUrl', 0, 200) &&
+             isValidOptionalString('linkedInUrl', 0, 200) &&
+             isValidOptionalString('portfolioUrl', 0, 200) &&
+             data.role in ['dev', 'recruiter', 'admin'] &&
+             data.createdAt is timestamp &&
+             (!('followers' in data) || data.followers is list) &&
+             (!('following' in data) || data.following is list);
+    }
+
+    function isValidPost(data) {
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'authorPhoto', 'content', 'createdAt', 'likes', 'likesCount', 'commentsCount']) &&
+             validStringLength('authorId', 1, 128) &&
+             validStringLength('authorName', 1, 200) &&
+             isValidOptionalString('authorPhoto', 0, 2000) &&
+             validStringLength('content', 1, 5000) &&
+             data.createdAt is timestamp &&
+             (!('likes' in data) || data.likes is list) &&
+             (!('likesCount' in data) || data.likesCount is number) &&
+             (!('commentsCount' in data) || (data.commentsCount is number && data.commentsCount >= 0));
+    }
+
+    function isValidJob(data) {
+      return hasOnlyAllowedFields(['authorId', 'companyName', 'title', 'type', 'location', 'description', 'skills', 'createdAt']) &&
+             validStringLength('authorId', 1, 128) &&
+             validStringLength('companyName', 1, 100) &&
+             validStringLength('title', 1, 100) &&
+             data.type in ['CDI', 'CDD', 'Stage', 'Freelance'] &&
+             validStringLength('location', 1, 100) &&
+             validStringLength('description', 1, 5000) &&
+             isValidList('skills', 20) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidComment(data) {
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'authorPhoto', 'content', 'createdAt']) &&
+             validStringLength('authorId', 1, 128) &&
+             validStringLength('authorName', 1, 200) &&
+             isValidOptionalString('authorPhoto', 0, 2000) &&
+             validStringLength('content', 1, 5000) &&
+             data.createdAt is timestamp;
+    }
+    function isValidNotification(data) {
+      return hasOnlyAllowedFields(['type', 'fromUserId', 'fromUserName', 'fromUserPhoto', 'postId', 'read', 'createdAt']) &&
+             data.type in ['like', 'comment', 'system'] &&
+             data.read is bool &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidChat(data) {
+      return hasOnlyAllowedFields(['participants', 'updatedAt', 'lastMessage']) &&
+             data.participants is list &&
+             data.participants.size() == 2 &&
+             data.updatedAt is timestamp &&
+             isValidOptionalString('lastMessage', 0, 1000);
+    }
+
+    function isValidChatMessage(data) {
+      return hasOnlyAllowedFields(['senderId', 'text', 'createdAt', 'read']) &&
+             validStringLength('senderId', 1, 128) &&
+             validStringLength('text', 1, 2000) &&
+             data.createdAt is timestamp &&
+             data.read is bool;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    isOwner(userId) &&
+                    isValidUser(request.resource.data) &&
+                    uidUnchanged() &&
+                    (request.resource.data.role == 'dev' || request.resource.data.role == 'recruiter' || isAdmin());
+      allow update: if isAuthenticated() &&
+                    isValidUser(request.resource.data) &&
+                    uidNotModified() &&
+                    areImmutableFieldsUnchanged(['uid', 'email', 'createdAt']) &&
+                    (
+                      (isOwner(userId) && (request.resource.data.role == resource.data.role || isAdmin())) ||
+                      (!isOwner(userId) && areImmutableFieldsUnchanged(['displayName', 'firstName', 'lastName', 'pseudo', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'following']))
+                    );
+      allow delete: if isAdmin();
+
+      match /notifications/{notificationId} {
+        allow read, update, delete: if isOwner(userId);
+        allow create: if isAuthenticated() && isValidNotification(request.resource.data);
+      }
+    }
+
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    request.resource.data.authorId == request.auth.uid &&
+                    isValidPost(request.resource.data) &&
+                    (!('likes' in request.resource.data) || request.resource.data.likes.size() == 0) &&
+                    (!('likesCount' in request.resource.data) || request.resource.data.likesCount == 0) &&
+                    (!('commentsCount' in request.resource.data) || request.resource.data.commentsCount == 0);
+      allow update: if isAuthenticated() &&
+                    isValidPost(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['authorId', 'createdAt']) &&
+                    (
+                      // Owner can update content
+                      isDocOwner() ||
+                      // Anyone can update likes/comments
+                      (!isDocOwner() && areImmutableFieldsUnchanged(['authorName', 'authorPhoto', 'content']))
+                    );
+      allow delete: if isDocOwner() || isAdmin();
+
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+                      request.resource.data.authorId == request.auth.uid &&
+                      isValidComment(request.resource.data);
+        allow update: if isAuthenticated() && 
+                      request.resource.data.authorId == request.auth.uid &&
+                      isValidComment(request.resource.data) &&
+                      areImmutableFieldsUnchanged(['authorId', 'createdAt']);
+        allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
+      }
+    }
+
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    request.resource.data.authorId == request.auth.uid &&
+                    isValidJob(request.resource.data);
+      allow update: if isAuthenticated() &&
+                    isDocOwner() &&
+                    isValidJob(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['authorId', 'createdAt']);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && 
+                    request.auth.uid in request.resource.data.participants &&
+                    isValidChat(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    request.auth.uid in resource.data.participants &&
+                    isValidChat(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['participants']);
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+                      request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                      request.resource.data.senderId == request.auth.uid &&
+                      isValidChatMessage(request.resource.data);
+        allow update: if isAuthenticated() && 
+                      request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                      isValidChatMessage(request.resource.data) &&
+                      areImmutableFieldsUnchanged(['senderId', 'text', 'createdAt']);
+      }
+    }
+  }
+}

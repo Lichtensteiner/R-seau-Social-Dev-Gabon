@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "Chat": {
+      "title": "Chat",
+      "description": "A 1-to-1 conversation between two users.",
+      "type": "object",
+      "properties": {
+        "participants": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Array of two user UIDs."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last message."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "Preview of the last message."
+        }
+      },
+      "required": ["participants", "updatedAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat.",
+      "type": "object",
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "description": "UID of the user who sent the message."
+        },
+        "text": {
+          "type": "string",
+          "description": "Text content of the message."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the message was sent."
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Whether the message has been read by the recipient."
+        }
+      },
+      "required": ["senderId", "text", "createdAt", "read"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user profile in the developer network.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID." },
+        "displayName": { "type": "string", "description": "The user's full name or display name." },
+        "firstName": { "type": "string", "description": "The user's first name." },
+        "lastName": { "type": "string", "description": "The user's last name." },
+        "pseudo": { "type": "string", "description": "The user's username/pseudo." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "photoURL": { "type": "string", "format": "uri", "description": "URL to the user's profile picture." },
+        "bio": { "type": "string", "description": "A short biography." },
+        "skills": { "type": "array", "items": { "type": "string" }, "description": "List of technical skills." },
+        "location": { "type": "string", "description": "City or region in Gabon." },
+        "status": { "type": "string", "description": "Professional status (e.g., Étudiant, Junior, Senior)." },
+        "experienceYears": { "type": "number", "description": "Years of experience." },
+        "githubUrl": { "type": "string", "format": "uri", "description": "Link to GitHub profile." },
+        "linkedInUrl": { "type": "string", "format": "uri", "description": "Link to LinkedIn profile." },
+        "portfolioUrl": { "type": "string", "format": "uri", "description": "Link to personal portfolio." },
+        "role": { "type": "string", "enum": ["dev", "recruiter", "admin"], "description": "User role." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp." },
+        "followers": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs following this user." },
+        "following": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs this user is following." }
+      },
+      "required": ["uid", "displayName", "email", "role", "createdAt"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "A social feed post.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "description": "UID of the author." },
+        "authorName": { "type": "string", "description": "Display name of the author." },
+        "authorPhoto": { "type": "string", "description": "Photo URL of the author." },
+        "content": { "type": "string", "description": "Text content of the post." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "likesCount": { "type": "number", "description": "Number of likes." },
+        "commentsCount": { "type": "number", "description": "Number of comments." }
+      },
+      "required": ["authorId", "authorName", "content", "createdAt", "likesCount", "commentsCount"]
+    },
+    "Job": {
+      "title": "Job",
+      "description": "A job or mission opportunity.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "description": "UID of the recruiter/author." },
+        "companyName": { "type": "string", "description": "Name of the company." },
+        "title": { "type": "string", "description": "Job title." },
+        "type": { "type": "string", "enum": ["CDI", "CDD", "Stage", "Freelance"], "description": "Contract type." },
+        "location": { "type": "string", "description": "Job location." },
+        "description": { "type": "string", "description": "Detailed job description." },
+        "skills": { "type": "array", "items": { "type": "string" }, "description": "Required skills." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["authorId", "companyName", "title", "type", "location", "description", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Collection of user profiles."
+    },
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/entities/Post" },
+      "description": "Collection of feed posts."
+    },
+    "/jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/Job" },
+      "description": "Collection of job opportunities."
+    },
+    "/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/Chat" },
+      "description": "1-to-1 conversations between users."
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Messages within a specific chat."
+    }
+  }
+}
