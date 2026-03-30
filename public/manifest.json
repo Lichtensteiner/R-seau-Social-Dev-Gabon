@@ -1,0 +1,23 @@
+{
+  "name": "Réseau Social Dev Gabon",
+  "short_name": "DevGabon",
+  "description": "Le premier réseau social professionnel pour les développeurs et métiers IT du Gabon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/assets/logo-dev-gabon-pro.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logo-dev-gabon-pro.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

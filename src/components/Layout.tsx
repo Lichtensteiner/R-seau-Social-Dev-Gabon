@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle, Settings, Github, BookOpen, Library, Globe, Code2, Shield } from 'lucide-react';
+import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle, Settings, Github, BookOpen, Library, Globe, Code2, Shield, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -12,6 +12,38 @@ export default function Layout({ user }: { user: User }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      // Update UI notify the user they can install the PWA
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    // Optionally, send analytics event with outcome of user choice
+    console.log(`User response to the install prompt: ${outcome}`);
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -125,6 +157,15 @@ export default function Layout({ user }: { user: User }) {
                 <p className="text-xs text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
+            {isInstallable && (
+              <button
+                onClick={handleInstallClick}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mb-2"
+              >
+                <Download size={18} />
+                Installer l'application
+              </button>
+            )}
             <button
               onClick={handleSignOut}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
