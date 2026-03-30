@@ -5,8 +5,8 @@ import { collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, updateD
 import { db } from '../firebase';
 import { Send, MessageSquare, Heart, Trash2, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { formatDistance } from '../lib/date-utils';
+import { logActivity } from '../lib/activity';
 
 interface Comment {
   id: string;
@@ -73,6 +73,7 @@ export default function FeedPage({ user }: { user: User }) {
         likes: [],
         commentsCount: 0
       });
+      await logActivity(user.uid, userData?.displayName || user.displayName || 'Développeur', 'post_create', 'A publié un nouveau post');
       setNewPostContent('');
     } catch (error) {
       console.error("Error creating post:", error);
@@ -269,7 +270,7 @@ export default function FeedPage({ user }: { user: User }) {
             <div key={post.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
               <div className="flex justify-between items-start">
                 <div className="flex gap-3">
-                  <Link to={`/profile/${post.authorId}`}>
+                  <Link to={`/app/profile/${post.authorId}`}>
                     <img 
                       src={post.authorPhoto || `https://ui-avatars.com/api/?name=${post.authorName}&background=random`} 
                       alt={post.authorName}
@@ -277,12 +278,12 @@ export default function FeedPage({ user }: { user: User }) {
                     />
                   </Link>
                   <div>
-                    <Link to={`/profile/${post.authorId}`}>
+                    <Link to={`/app/profile/${post.authorId}`}>
                       <h3 className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">{post.authorName}</h3>
                     </Link>
                     <div className="flex items-center text-xs text-slate-500 mt-0.5">
                       <Clock size={12} className="mr-1" />
-                      {post.createdAt ? formatDistanceToNow(post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt), { addSuffix: true, locale: fr }) : "à l'instant"}
+                      {formatDistance(post.createdAt)}
                     </div>
                   </div>
                 </div>
@@ -351,7 +352,7 @@ export default function FeedPage({ user }: { user: User }) {
                             <p className="text-sm text-slate-700 mt-0.5 break-words">{comment.content}</p>
                           </div>
                           <div className="text-[11px] text-slate-400 mt-1 ml-2">
-                            {comment.createdAt ? formatDistanceToNow(comment.createdAt?.toDate ? comment.createdAt.toDate() : new Date(comment.createdAt), { addSuffix: true, locale: fr }) : "à l'instant"}
+                            {formatDistance(comment.createdAt)}
                           </div>
                         </div>
                       </div>

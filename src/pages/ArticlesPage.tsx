@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
+import { logActivity } from '../lib/activity';
 
 interface Article {
   id: string;
@@ -79,6 +80,8 @@ export default function ArticlesPage({ user }: { user: User }) {
         likesCount: 0,
         viewsCount: 0
       });
+
+      await logActivity(user.uid, authorName, 'article_create', `A publié l'article: ${newTitle}`);
 
       setIsCreateModalOpen(false);
       setNewTitle('');

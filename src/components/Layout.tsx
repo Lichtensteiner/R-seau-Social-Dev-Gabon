@@ -1,15 +1,27 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle, Settings, Github, BookOpen, Library } from 'lucide-react';
+import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle, Settings, Github, BookOpen, Library, Globe, Code2, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { UserProfile } from '../types';
 
 export default function Layout({ user }: { user: User }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
+      if (snapshot.exists()) {
+        setUserProfile(snapshot.data() as UserProfile);
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -28,23 +40,31 @@ export default function Layout({ user }: { user: User }) {
   };
 
   const navigation = [
-    { name: "Fil d'actualité", href: '/', icon: Home },
-    { name: 'Annuaire', href: '/network', icon: Users },
-    { name: 'Opportunités', href: '/jobs', icon: Briefcase },
-    { name: 'Messages', href: '/messages', icon: MessageCircle },
-    { name: 'GitHub Explorer', href: '/github-explorer', icon: Github },
-    { name: 'Articles', href: '/articles', icon: BookOpen },
-    { name: 'Bibliothèque', href: '/books', icon: Library },
-    { name: 'Notifications', href: '/notifications', icon: Bell, badge: unreadCount },
-    { name: 'Mon Profil', href: '/profile', icon: UserIcon },
-    { name: 'Paramètres', href: '/settings', icon: Settings },
+    { name: "Fil d'actualité", href: '/app', icon: Home },
+    { name: 'Annuaire', href: '/app/network', icon: Users },
+    { name: 'Opportunités', href: '/app/jobs', icon: Briefcase },
+    { name: 'Messages', href: '/app/messages', icon: MessageCircle },
+    { name: 'GitHub Explorer', href: '/app/github-explorer', icon: Github },
+    { name: 'Articles', href: '/app/articles', icon: BookOpen },
+    { name: 'Bibliothèque', href: '/app/books', icon: Library },
+    { name: 'Notifications', href: '/app/notifications', icon: Bell, badge: unreadCount },
+    { name: 'Mon Profil', href: '/app/profile', icon: UserIcon },
+    { name: 'Paramètres', href: '/app/settings', icon: Settings },
+    { name: 'Présentation', href: '/', icon: Globe },
   ];
+
+  if (userProfile?.role === 'admin') {
+    navigation.splice(navigation.length - 1, 0, { name: 'Administration', href: '/app/admin/users', icon: Shield });
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       {/* Mobile Header */}
       <div className="md:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="text-xl font-bold text-indigo-600">DevGabon</div>
+        <div className="flex items-center gap-2">
+          <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-8 h-8 object-contain" />
+          <div className="text-xl font-bold text-indigo-600">DevGabon</div>
+        </div>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-600">
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -58,8 +78,11 @@ export default function Layout({ user }: { user: User }) {
       `}>
         <div className="h-full flex flex-col">
           <div className="p-6 hidden md:block">
-            <div className="text-2xl font-bold text-indigo-600">DevGabon</div>
-            <p className="text-xs text-slate-500 mt-1">Réseau Social IT</p>
+            <div className="flex items-center gap-3 mb-1">
+              <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-10 h-10 object-contain" />
+              <div className="text-2xl font-bold text-indigo-600">DevGabon</div>
+            </div>
+            <p className="text-xs text-slate-500">Réseau Social IT</p>
           </div>
 
           <nav className="flex-1 px-4 space-y-2 mt-6 md:mt-0">

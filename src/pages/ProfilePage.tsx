@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
-import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library } from 'lucide-react';
+import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library, X, Users } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { logActivity } from '../lib/activity';
+import { motion, AnimatePresence } from 'motion/react';
+import { formatDate } from '../lib/date-utils';
 
 interface Repo {
   id: number;
@@ -57,6 +60,10 @@ export default function ProfilePage({ user }: { user: User }) {
   const [userArticles, setUserArticles] = useState<any[]>([]);
   const [userBooks, setUserBooks] = useState<any[]>([]);
   const [loadingContent, setLoadingContent] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followListData, setFollowListData] = useState<UserProfile[]>([]);
+  const [loadingFollowList, setLoadingFollowList] = useState(false);
   
   const [formData, setFormData] = useState({
     displayName: '',
@@ -183,6 +190,8 @@ export default function ProfilePage({ user }: { user: User }) {
 
       await updateDoc(doc(db, 'users', user.uid), updateData);
       
+      await logActivity(user.uid, formData.displayName, 'profile_update', 'A mis à jour son profil');
+
       setProfile(prev => prev ? { ...prev, ...updateData } : null);
       setIsEditing(false);
     } catch (error) {
@@ -238,6 +247,37 @@ export default function ProfilePage({ user }: { user: User }) {
     } catch (error) {
       console.error("Error toggling follow:", error);
     }
+  };
+
+  const fetchFollowListData = async (uids: string[]) => {
+    if (!uids || uids.length === 0) {
+      setFollowListData([]);
+      return;
+    }
+    setLoadingFollowList(true);
+    try {
+      const usersRef = collection(db, 'users');
+      // Firestore 'in' query is limited to 10 items, but for now it's okay for a prototype
+      // or we can fetch them one by one if needed. Let's do a simple version.
+      const q = query(usersRef, where('uid', 'in', uids.slice(0, 10)));
+      const querySnapshot = await getDocs(q);
+      const usersData = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+      setFollowListData(usersData);
+    } catch (error) {
+      console.error("Error fetching follow list data:", error);
+    } finally {
+      setLoadingFollowList(false);
+    }
+  };
+
+  const openFollowersModal = () => {
+    setShowFollowersModal(true);
+    fetchFollowListData(profile?.followers || []);
+  };
+
+  const openFollowingModal = () => {
+    setShowFollowingModal(true);
+    fetchFollowListData(profile?.following || []);
   };
 
   if (loading) {
@@ -315,7 +355,7 @@ export default function ProfilePage({ user }: { user: User }) {
                       )}
                     </button>
                     <button 
-                      onClick={() => navigate(`/messages?userId=${targetUserId}`)}
+                      onClick={() => navigate(`/app/messages?userId=${targetUserId}`)}
                       className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
                     >
                       <MessageSquare size={16} />
@@ -367,12 +407,18 @@ export default function ProfilePage({ user }: { user: User }) {
                   )}
                 </p>
                 <div className="flex items-center gap-4 mt-4 text-sm font-medium text-slate-600">
-                  <div className="flex items-center gap-1">
+                  <button 
+                    onClick={openFollowersModal}
+                    className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                  >
                     <span className="text-slate-900 font-bold">{profile.followers?.length || 0}</span> abonnés
-                  </div>
-                  <div className="flex items-center gap-1">
+                  </button>
+                  <button 
+                    onClick={openFollowingModal}
+                    className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                  >
                     <span className="text-slate-900 font-bold">{profile.following?.length || 0}</span> abonnements
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -487,7 +533,7 @@ export default function ProfilePage({ user }: { user: User }) {
                         <p className="text-sm text-slate-500 mt-1 line-clamp-2">{article.summary}</p>
                         <div className="flex items-center gap-3 mt-3 text-xs text-slate-400 font-medium">
                           <span className="flex items-center gap-1"><Heart size={12} /> {article.likes?.length || 0}</span>
-                          <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+                          <span>{formatDate(article.createdAt, 'dd/MM/yyyy')}</span>
                         </div>
                       </div>
                     ))}
@@ -729,6 +775,89 @@ export default function ProfilePage({ user }: { user: User }) {
           )}
         </div>
       </div>
+
+      {/* Followers/Following Modal */}
+      <AnimatePresence>
+        {(showFollowersModal || showFollowingModal) && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-900">
+                  {showFollowersModal ? 'Abonnés' : 'Abonnements'}
+                </h3>
+                <button 
+                  onClick={() => { setShowFollowersModal(false); setShowFollowingModal(false); }} 
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-4 max-h-[400px] overflow-y-auto">
+                {loadingFollowList ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                  </div>
+                ) : followListData.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500 italic">
+                    Aucun utilisateur trouvé
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {followListData.map((userItem) => (
+                      <div 
+                        key={userItem.uid} 
+                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          navigate(`/app/profile/${userItem.uid}`);
+                          setShowFollowersModal(false);
+                          setShowFollowingModal(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName)}&background=random`} 
+                            alt={userItem.displayName}
+                            className="w-10 h-10 rounded-full object-cover border border-slate-100"
+                          />
+                          <div>
+                            <div className="font-bold text-slate-900">{userItem.displayName}</div>
+                            <div className="text-xs text-slate-500 capitalize">{userItem.role}</div>
+                          </div>
+                        </div>
+                        <ChevronRight size={18} className="text-slate-400" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function ChevronRight({ size, className }: { size: number, className?: string }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="m9 18 6-6-6-6"/>
+    </svg>
   );
 }

@@ -70,6 +70,15 @@ service cloud.firestore {
     //   - skills: list (optional) - Required skills
     //   - createdAt: timestamp (required, immutable) - Creation timestamp
     //
+    // Collection: activities
+    // Document ID: {activityId}
+    // Fields:
+    //   - userId: string (required, immutable) - UID of the user
+    //   - userName: string (optional) - Name of the user
+    //   - type: string (required) - Type of activity
+    //   - details: string (optional) - Additional details
+    //   - timestamp: timestamp (required, immutable) - When it occurred
+    //
     // ===============================================================
 
     // ===============================================================
@@ -139,24 +148,25 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'followers', 'following', 'phone', 'settings']) &&
-             validStringLength('uid', 1, 128) &&
-             validStringLength('displayName', 1, 100) &&
+      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'lastLoginAt', 'followers', 'following', 'phone', 'settings']) &&
+             (!( 'uid' in data) || validStringLength('uid', 1, 128)) &&
+             (!( 'displayName' in data) || validStringLength('displayName', 1, 100)) &&
              isValidOptionalString('firstName', 0, 100) &&
              isValidOptionalString('lastName', 0, 100) &&
              isValidOptionalString('pseudo', 0, 100) &&
-             isValidEmail(data.email) &&
+             (!( 'email' in data) || isValidEmail(data.email)) &&
              isValidOptionalString('photoURL', 0, 2000) &&
              isValidOptionalString('bio', 0, 1000) &&
-             isValidList('skills', 50) &&
+             (!( 'skills' in data) || isValidList('skills', 50)) &&
              isValidOptionalString('location', 0, 100) &&
              isValidOptionalString('status', 0, 50) &&
              (!('experienceYears' in data) || data.experienceYears is number) &&
              isValidOptionalString('githubUrl', 0, 200) &&
              isValidOptionalString('linkedInUrl', 0, 200) &&
              isValidOptionalString('portfolioUrl', 0, 200) &&
-             data.role in ['dev', 'recruiter', 'writer', 'admin'] &&
-             data.createdAt is timestamp &&
+             (!( 'role' in data) || data.role in ['dev', 'recruiter', 'writer', 'admin']) &&
+             (!( 'createdAt' in data) || data.createdAt is timestamp) &&
+             (!('lastLoginAt' in data) || data.lastLoginAt is timestamp) &&
              (!('followers' in data) || data.followers is list) &&
              (!('following' in data) || data.following is list) &&
              isValidOptionalString('phone', 0, 20) &&
@@ -243,6 +253,15 @@ service cloud.firestore {
              isValidOptionalString('genre', 0, 100) &&
              isValidOptionalString('publishedDate', 0, 100) &&
              data.createdAt is timestamp;
+    }
+
+    function isValidActivity(data) {
+      return hasOnlyAllowedFields(['userId', 'userName', 'type', 'details', 'timestamp']) &&
+             validStringLength('userId', 1, 128) &&
+             isValidOptionalString('userName', 0, 200) &&
+             validStringLength('type', 1, 100) &&
+             isValidOptionalString('details', 0, 2000) &&
+             data.timestamp is timestamp;
     }
 
     // ===============================================================
@@ -361,6 +380,14 @@ service cloud.firestore {
                     isValidBook(request.resource.data) &&
                     areImmutableFieldsUnchanged(['authorId', 'createdAt']);
       allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /activities/{activityId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    isValidActivity(request.resource.data);
+      allow update, delete: if isAdmin();
     }
   }
 }

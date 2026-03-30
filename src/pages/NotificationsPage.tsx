@@ -3,8 +3,7 @@ import { User } from 'firebase/auth';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Bell, Heart, MessageSquare, Trash2, CheckCircle2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { formatDistance } from '../lib/date-utils';
 import { Link } from 'react-router-dom';
 
 interface Notification {
@@ -120,7 +119,7 @@ export default function NotificationsPage({ user }: { user: User }) {
                 onClick={() => !notif.read && markAsRead(notif.id)}
               >
                 <div className="relative shrink-0 mt-1">
-                  <Link to={`/profile/${notif.fromUserId}`}>
+                  <Link to={`/app/profile/${notif.fromUserId}`}>
                     <img 
                       src={notif.fromUserPhoto || `https://ui-avatars.com/api/?name=${notif.fromUserName}&background=random`} 
                       alt={notif.fromUserName}
@@ -134,16 +133,16 @@ export default function NotificationsPage({ user }: { user: User }) {
                 
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-slate-800">
-                    <Link to={`/profile/${notif.fromUserId}`}>
+                    <Link to={`/app/profile/${notif.fromUserId}`}>
                       <span className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">{notif.fromUserName}</span>
                     </Link>
                     {notif.type === 'like' ? ' a aimé votre publication.' : ' a commenté votre publication.'}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-slate-500">
-                      {notif.createdAt ? formatDistanceToNow(notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date(notif.createdAt), { addSuffix: true, locale: fr }) : "à l'instant"}
+                      {formatDistance(notif.createdAt)}
                     </span>
-                    <Link to="/" className="text-xs text-indigo-600 hover:underline font-medium">
+                    <Link to="/app" className="text-xs text-indigo-600 hover:underline font-medium">
                       Voir la publication
                     </Link>
                   </div>

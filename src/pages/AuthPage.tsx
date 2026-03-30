@@ -4,6 +4,7 @@ import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, si
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Code2, Github, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { logActivity } from '../lib/activity';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -40,6 +41,7 @@ export default function AuthPage() {
           role: role,
           createdAt: serverTimestamp()
         });
+        await logActivity(result.user.uid, result.user.displayName || 'Développeur', 'signup', 'S\'est inscrit via Google');
       } else if (result.user.email === 'ludo.consulting3@gmail.com' && userSnap.data().role !== 'admin') {
         await setDoc(userRef, { role: 'admin' }, { merge: true });
       }
@@ -83,6 +85,7 @@ export default function AuthPage() {
           role: initialRole,
           createdAt: serverTimestamp()
         });
+        await logActivity(result.user.uid, name || 'Nouvel utilisateur', 'signup', 'S\'est inscrit via Email');
       }
     } catch (err: any) {
       console.error(err);

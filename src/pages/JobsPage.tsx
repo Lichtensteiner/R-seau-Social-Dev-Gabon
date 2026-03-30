@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { Briefcase, MapPin, Clock, Plus, Trash2, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { logActivity } from '../lib/activity';
 
 interface Job {
   id: string;
@@ -77,6 +78,8 @@ export default function JobsPage({ user }: { user: User }) {
         createdAt: serverTimestamp()
       });
       
+      await logActivity(user.uid, user.displayName || 'Recruteur', 'job_create', `A publié une offre: ${formData.title} chez ${formData.companyName}`);
+
       setShowForm(false);
       setFormData({
         title: '', companyName: '', type: 'CDI', location: '', description: '', skills: ''

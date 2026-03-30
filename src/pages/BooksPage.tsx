@@ -7,6 +7,7 @@ import { Library, Plus, Search, Tag, Calendar, User as UserIcon, ExternalLink, L
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
+import { logActivity } from '../lib/activity';
 
 interface Book {
   id: string;
@@ -75,6 +76,8 @@ export default function BooksPage({ user }: { user: User }) {
         coverImage: newCoverImage,
         createdAt: serverTimestamp()
       });
+
+      await logActivity(user.uid, authorName, 'book_create', `A ajouté le livre: ${newTitle}`);
 
       setIsCreateModalOpen(false);
       setNewTitle('');

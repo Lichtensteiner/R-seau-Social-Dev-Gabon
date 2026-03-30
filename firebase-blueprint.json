@@ -69,6 +69,7 @@
         "portfolioUrl": { "type": "string", "format": "uri", "description": "Link to personal portfolio." },
         "role": { "type": "string", "enum": ["dev", "recruiter", "writer", "admin"], "description": "User role." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp." },
+        "lastLoginAt": { "type": "string", "format": "date-time", "description": "Last login timestamp." },
         "followers": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs following this user." },
         "following": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs this user is following." }
       },
@@ -139,6 +140,19 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when added to the platform." }
       },
       "required": ["authorId", "authorName", "title", "description", "createdAt"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "A log of user activity in the system.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user." },
+        "userName": { "type": "string", "description": "Name of the user." },
+        "type": { "type": "string", "description": "Type of activity (e.g., login, post_create)." },
+        "details": { "type": "string", "description": "Additional details about the activity." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the activity occurred." }
+      },
+      "required": ["userId", "type", "timestamp"]
     }
   },
   "firestore": {
@@ -169,6 +183,10 @@
     "/books/{bookId}": {
       "schema": { "$ref": "#/entities/Book" },
       "description": "Collection of books."
+    },
+    "/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/Activity" },
+      "description": "Collection of system activities."
     }
   }
 }

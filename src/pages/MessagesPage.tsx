@@ -6,6 +6,7 @@ import { Search, Send, ArrowLeft, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { logActivity } from '../lib/activity';
 
 interface Chat {
   id: string;
@@ -87,7 +88,7 @@ export default function MessagesPage({ user }: { user: User }) {
         if (existingChat) {
           setSelectedChat(existingChat);
           // Remove query param without reloading
-          navigate('/messages', { replace: true });
+          navigate('/app/messages', { replace: true });
           return;
         }
 
@@ -97,7 +98,7 @@ export default function MessagesPage({ user }: { user: User }) {
           if (userSnap.exists()) {
             const otherUser = userSnap.data() as UserProfile;
             await startChat(otherUser);
-            navigate('/messages', { replace: true });
+            navigate('/app/messages', { replace: true });
           }
         } catch (error) {
           console.error("Error starting direct chat:", error);
@@ -206,6 +207,8 @@ export default function MessagesPage({ user }: { user: User }) {
       updatedAt: serverTimestamp(),
       lastMessage: text
     });
+
+    await logActivity(user.uid, user.displayName || 'Utilisateur', 'message_send', `A envoyé un message à ${selectedChat.otherUser?.displayName}`);
   };
 
   return (
