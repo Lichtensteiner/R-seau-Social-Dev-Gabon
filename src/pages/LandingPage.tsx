@@ -413,16 +413,16 @@ export default function LandingPage({ user }: { user: User | null }) {
               <h4 className="font-bold mb-6">Contact</h4>
               <ul className="space-y-4 text-slate-400">
                 <li>Libreville, Gabon</li>
-                <li>contact@devgabon.ga</li>
-                <li>+241 XX XX XX XX</li>
+                <li>ludo.consulting3@gmail.com</li>
+                <li>+241 062-641-120 / 077-022-306</li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-sm">
             <p>© 2026 DevGabon. Fièrement développé par M. Mve Zogo Ludovic Martinien.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors">Confidentialité</a>
-              <a href="#" className="hover:text-white transition-colors">Conditions</a>
+              <Link to="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">Conditions</Link>
             </div>
           </div>
         </div>

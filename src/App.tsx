@@ -16,6 +16,8 @@ import GitHubExplorerPage from './pages/GitHubExplorerPage';
 import ArticlesPage from './pages/ArticlesPage';
 import BooksPage from './pages/BooksPage';
 import LandingPage from './pages/LandingPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import AdminUsersPage from './pages/AdminUsersPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import { handleFirestoreError, OperationType } from './lib/firestore-errors';
@@ -88,6 +90,8 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage user={user} />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/app" />} />
           
           <Route path="/app" element={user ? <Layout user={user} /> : <Navigate to="/auth" />}>
