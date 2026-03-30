@@ -64,22 +64,22 @@ export default function LandingPage({ user }: { user: User | null }) {
             <Link to="/" className="hover:text-indigo-600 transition-colors">Présentation</Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {user ? (
               <Link 
                 to="/app" 
-                className="px-6 py-2.5 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm sm:text-base font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
               >
                 Accéder au réseau
               </Link>
             ) : (
               <>
-                <Link to="/auth" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">
+                <Link to="/auth" className="text-xs sm:text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">
                   Connexion
                 </Link>
                 <Link 
                   to="/auth" 
-                  className="px-6 py-2.5 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                  className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm sm:text-base font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
                 >
                   Rejoindre
                 </Link>
@@ -118,14 +118,14 @@ export default function LandingPage({ user }: { user: User | null }) {
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={() => navigate(user ? '/app' : '/auth')}
-                  className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2 group"
+                  className="px-6 py-3.5 sm:px-8 sm:py-4 bg-indigo-600 text-white rounded-2xl font-bold text-base sm:text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2 group"
                 >
                   Commencer l'aventure
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </button>
                 <a 
                   href="#mission"
-                  className="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                  className="px-6 py-3.5 sm:px-8 sm:py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl font-bold text-base sm:text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                 >
                   En savoir plus
                 </a>
@@ -388,21 +388,21 @@ export default function LandingPage({ user }: { user: User | null }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-20">
+      <footer className="bg-slate-900 text-white py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
-            <div className="col-span-2 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-12 sm:mb-16">
+            <div className="sm:col-span-2 lg:col-span-2 space-y-6">
               <div className="flex items-center gap-2">
-                <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-10 h-10 object-contain" />
-                <span className="text-2xl font-bold">DevGabon</span>
+                <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+                <span className="text-xl sm:text-2xl font-bold">DevGabon</span>
               </div>
-              <p className="text-slate-400 max-w-sm leading-relaxed">
+              <p className="text-slate-400 max-w-sm leading-relaxed text-sm sm:text-base">
                 La plateforme sociale qui connecte l'intelligence technologique et la créativité littéraire du Gabon.
               </p>
             </div>
             <div>
-              <h4 className="font-bold mb-6">Liens Rapides</h4>
-              <ul className="space-y-4 text-slate-400">
+              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Liens Rapides</h4>
+              <ul className="space-y-3 sm:space-y-4 text-slate-400 text-sm sm:text-base">
                 <li><a href="#mission" className="hover:text-white transition-colors">Mission</a></li>
                 <li><a href="#features" className="hover:text-white transition-colors">Fonctionnalités</a></li>
                 <li><a href="#context" className="hover:text-white transition-colors">Contexte</a></li>
@@ -410,15 +410,24 @@ export default function LandingPage({ user }: { user: User | null }) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6">Contact</h4>
-              <ul className="space-y-4 text-slate-400">
-                <li>Libreville, Gabon</li>
-                <li>ludo.consulting3@gmail.com</li>
-                <li>+241 062-641-120 / 077-022-306</li>
+              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Contact</h4>
+              <ul className="space-y-3 sm:space-y-4 text-slate-400 text-sm sm:text-base">
+                <li className="flex items-center gap-2">
+                  <Globe size={16} className="text-indigo-400" />
+                  Libreville, Gabon
+                </li>
+                <li className="flex items-center gap-2">
+                  <MessageSquare size={16} className="text-indigo-400" />
+                  ludo.consulting3@gmail.com
+                </li>
+                <li className="flex items-center gap-2">
+                  <Zap size={16} className="text-indigo-400" />
+                  +241 062-641-120 / 077-022-306
+                </li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-sm">
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-xs sm:text-sm text-center md:text-left">
             <p>© 2026 DevGabon. Fièrement développé par M. Mve Zogo Ludovic Martinien.</p>
             <div className="flex gap-6">
               <Link to="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>

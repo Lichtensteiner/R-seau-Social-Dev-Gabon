@@ -117,7 +117,7 @@ export default function Layout({ user }: { user: User }) {
             <p className="text-xs text-slate-500">Réseau Social IT</p>
           </div>
 
-          <nav className="flex-1 px-4 space-y-2 mt-6 md:mt-0">
+          <nav className="flex-1 px-4 space-y-2 mt-6 md:mt-0 overflow-y-auto custom-scrollbar">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -145,32 +145,32 @@ export default function Layout({ user }: { user: User }) {
             })}
           </nav>
 
-          <div className="p-4 border-t border-slate-200">
-            <div className="flex items-center gap-3 px-4 py-3 mb-2">
+          <div className="p-3 sm:p-4 border-t border-slate-200 bg-white">
+            <div className="flex items-center gap-3 px-2 sm:px-4 py-2 sm:py-3 mb-2">
               <img 
                 src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || user.email}&background=random`} 
                 alt="Avatar" 
-                className="w-10 h-10 rounded-full bg-slate-200 object-cover"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 object-cover"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{user.displayName || 'Utilisateur'}</p>
-                <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-900 truncate">{user.displayName || 'Utilisateur'}</p>
+                <p className="text-[10px] sm:text-xs text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
             {isInstallable && (
               <button
                 onClick={handleInstallClick}
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mb-2"
+                className="w-full flex items-center gap-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mb-2"
               >
-                <Download size={18} />
+                <Download size={16} />
                 Installer l'application
               </button>
             )}
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <LogOut size={18} />
+              <LogOut size={16} />
               Déconnexion
             </button>
           </div>
