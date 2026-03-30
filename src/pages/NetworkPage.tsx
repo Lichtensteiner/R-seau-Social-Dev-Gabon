@@ -79,6 +79,7 @@ export default function NetworkPage() {
           >
             <option value="all">Tous les profils</option>
             <option value="dev">Développeurs</option>
+            <option value="writer">Écrivains / Auteurs</option>
             <option value="recruiter">Recruteurs</option>
           </select>
         </div>
@@ -109,7 +110,7 @@ export default function NetworkPage() {
                       />
                     </Link>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
-                      {user.role === 'dev' ? 'Développeur' : user.role === 'recruiter' ? 'Recruteur' : 'Admin'}
+                      {user.role === 'dev' ? 'Développeur' : user.role === 'writer' ? 'Écrivain' : user.role === 'recruiter' ? 'Recruteur' : 'Admin'}
                     </span>
                   </div>
                   

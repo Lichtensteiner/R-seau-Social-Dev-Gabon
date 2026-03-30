@@ -67,7 +67,7 @@
         "githubUrl": { "type": "string", "format": "uri", "description": "Link to GitHub profile." },
         "linkedInUrl": { "type": "string", "format": "uri", "description": "Link to LinkedIn profile." },
         "portfolioUrl": { "type": "string", "format": "uri", "description": "Link to personal portfolio." },
-        "role": { "type": "string", "enum": ["dev", "recruiter", "admin"], "description": "User role." },
+        "role": { "type": "string", "enum": ["dev", "recruiter", "writer", "admin"], "description": "User role." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp." },
         "followers": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs following this user." },
         "following": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs this user is following." }
@@ -104,6 +104,41 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
       },
       "required": ["authorId", "companyName", "title", "type", "location", "description", "createdAt"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "A long-form article or blog post.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "description": "UID of the author." },
+        "authorName": { "type": "string", "description": "Display name of the author." },
+        "title": { "type": "string", "description": "Title of the article." },
+        "content": { "type": "string", "description": "Markdown content of the article." },
+        "summary": { "type": "string", "description": "Short summary of the article." },
+        "coverImage": { "type": "string", "format": "uri", "description": "URL to the cover image." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "List of tags." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "likesCount": { "type": "number", "description": "Number of likes." },
+        "viewsCount": { "type": "number", "description": "Number of views." }
+      },
+      "required": ["authorId", "authorName", "title", "content", "createdAt"]
+    },
+    "Book": {
+      "title": "Book",
+      "description": "A book published or showcased by a user.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "description": "UID of the author." },
+        "authorName": { "type": "string", "description": "Display name of the author." },
+        "title": { "type": "string", "description": "Title of the book." },
+        "description": { "type": "string", "description": "Description or synopsis of the book." },
+        "coverImage": { "type": "string", "format": "uri", "description": "URL to the book cover." },
+        "purchaseUrl": { "type": "string", "format": "uri", "description": "Link to buy the book." },
+        "genre": { "type": "string", "description": "Genre of the book." },
+        "publishedDate": { "type": "string", "format": "date", "description": "Date of publication." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when added to the platform." }
+      },
+      "required": ["authorId", "authorName", "title", "description", "createdAt"]
     }
   },
   "firestore": {
@@ -126,6 +161,14 @@
     "/chats/{chatId}/messages/{messageId}": {
       "schema": { "$ref": "#/entities/Message" },
       "description": "Messages within a specific chat."
+    },
+    "/articles/{articleId}": {
+      "schema": { "$ref": "#/entities/Article" },
+      "description": "Collection of long-form articles."
+    },
+    "/books/{bookId}": {
+      "schema": { "$ref": "#/entities/Book" },
+      "description": "Collection of books."
     }
   }
 }

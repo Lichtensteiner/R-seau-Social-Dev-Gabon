@@ -10,6 +10,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [role, setRole] = useState('dev');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export default function AuthPage() {
       const userSnap = await getDoc(userRef);
       
       if (!userSnap.exists()) {
+        const role = result.user.email === 'ludo.consulting3@gmail.com' ? 'admin' : 'dev';
         // Create user profile
         await setDoc(userRef, {
           uid: result.user.uid,
@@ -35,9 +37,11 @@ export default function AuthPage() {
           skills: [],
           location: '',
           githubUrl: '',
-          role: 'dev',
+          role: role,
           createdAt: serverTimestamp()
         });
+      } else if (result.user.email === 'ludo.consulting3@gmail.com' && userSnap.data().role !== 'admin') {
+        await setDoc(userRef, { role: 'admin' }, { merge: true });
       }
     } catch (err: any) {
       console.error(err);
@@ -54,26 +58,40 @@ export default function AuthPage() {
       setError('');
       
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        // Ensure admin role if email matches
+        if (result.user.email === 'ludo.consulting3@gmail.com') {
+          const userRef = doc(db, 'users', result.user.uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists() && userSnap.data().role !== 'admin') {
+            await setDoc(userRef, { role: 'admin' }, { merge: true });
+          }
+        }
       } else {
         const result = await createUserWithEmailAndPassword(auth, email, password);
+        const initialRole = result.user.email === 'ludo.consulting3@gmail.com' ? 'admin' : role;
         // Create user profile
         await setDoc(doc(db, 'users', result.user.uid), {
           uid: result.user.uid,
-          displayName: name || 'Développeur',
+          displayName: name || (role === 'writer' ? 'Auteur' : 'Développeur'),
           email: result.user.email,
           photoURL: '',
           bio: '',
           skills: [],
           location: '',
           githubUrl: '',
-          role: 'dev',
+          role: initialRole,
           createdAt: serverTimestamp()
         });
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Une erreur est survenue.');
+      if (err.code === 'auth/email-already-in-use') {
+        setError('Cet email est déjà utilisé. Veuillez vous connecter.');
+        setIsLogin(true);
+      } else {
+        setError(err.message || 'Une erreur est survenue.');
+      }
     } finally {
       setLoading(false);
     }
@@ -106,22 +124,54 @@ export default function AuthPage() {
 
           <form className="space-y-6" onSubmit={handleEmailAuth}>
             {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Nom complet</label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-slate-400" />
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Nom complet</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-slate-300 rounded-md py-2 border"
+                      placeholder="Jean Dupont"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-slate-300 rounded-md py-2 border"
-                    placeholder="Jean Dupont"
-                  />
                 </div>
-              </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Votre profil</label>
+                  <div className="mt-1 grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRole('dev')}
+                      className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-all ${
+                        role === 'dev' 
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600' 
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Code2 size={20} className="mb-1" />
+                      <span className="text-xs font-medium">Développeur</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole('writer')}
+                      className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-all ${
+                        role === 'writer' 
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600' 
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <UserIcon size={20} className="mb-1" />
+                      <span className="text-xs font-medium">Écrivain / Auteur</span>
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
             <div>

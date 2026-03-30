@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
-import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2 } from 'lucide-react';
+import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 interface Repo {
@@ -52,7 +52,11 @@ export default function ProfilePage({ user }: { user: User }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loadingRepos, setLoadingRepos] = useState(false);
-  const [userStats, setUserStats] = useState({ posts: 0, jobs: 0 });
+  const [showAllRepos, setShowAllRepos] = useState(false);
+  const [userStats, setUserStats] = useState({ posts: 0, jobs: 0, articles: 0, books: 0 });
+  const [userArticles, setUserArticles] = useState<any[]>([]);
+  const [userBooks, setUserBooks] = useState<any[]>([]);
+  const [loadingContent, setLoadingContent] = useState(false);
   
   const [formData, setFormData] = useState({
     displayName: '',
@@ -103,9 +107,19 @@ export default function ProfilePage({ user }: { user: User }) {
         const jobsQuery = query(collection(db, 'jobs'), where('authorId', '==', targetUserId));
         const jobsSnap = await getDocs(jobsQuery);
 
+        const articlesQuery = query(collection(db, 'articles'), where('authorId', '==', targetUserId));
+        const articlesSnap = await getDocs(articlesQuery);
+        setUserArticles(articlesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        const booksQuery = query(collection(db, 'books'), where('authorId', '==', targetUserId));
+        const booksSnap = await getDocs(booksQuery);
+        setUserBooks(booksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
         setUserStats({
           posts: postsSnap.size,
-          jobs: jobsSnap.size
+          jobs: jobsSnap.size,
+          articles: articlesSnap.size,
+          books: booksSnap.size
         });
 
       } catch (error) {
@@ -128,7 +142,8 @@ export default function ProfilePage({ user }: { user: User }) {
       if (username) {
         setLoadingRepos(true);
         try {
-          const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=4`);
+          const limit = showAllRepos ? 100 : 4;
+          const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=${limit}`);
           if (res.ok) {
             const data = await res.json();
             setRepos(data);
@@ -142,7 +157,7 @@ export default function ProfilePage({ user }: { user: User }) {
     };
 
     fetchRepos();
-  }, [profile?.githubUrl]);
+  }, [profile?.githubUrl, showAllRepos]);
 
   const handleSave = async () => {
     try {
@@ -338,7 +353,7 @@ export default function ProfilePage({ user }: { user: User }) {
                 </h1>
                 <p className="text-slate-500 flex items-center gap-2 mt-2">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 capitalize">
-                    {profile.role === 'dev' ? 'Développeur' : profile.role === 'recruiter' ? 'Recruteur' : 'Admin'}
+                    {profile.role === 'dev' ? 'Développeur' : profile.role === 'writer' ? 'Écrivain / Auteur' : profile.role === 'recruiter' ? 'Recruteur' : 'Admin'}
                   </span>
                   {profile.status && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
@@ -364,14 +379,14 @@ export default function ProfilePage({ user }: { user: User }) {
               {/* Stats Bento */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
-                  <MessageSquare size={24} className="text-indigo-500 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{userStats.posts}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Publications</span>
+                  <BookOpen size={24} className="text-indigo-500 mb-2" />
+                  <span className="text-2xl font-bold text-slate-900">{userStats.articles}</span>
+                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Articles</span>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
-                  <Briefcase size={24} className="text-purple-500 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{userStats.jobs}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Offres publiées</span>
+                  <Library size={24} className="text-amber-500 mb-2" />
+                  <span className="text-2xl font-bold text-slate-900">{userStats.books}</span>
+                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Livres</span>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
                   <Code2 size={24} className="text-pink-500 mb-2" />
@@ -458,48 +473,114 @@ export default function ProfilePage({ user }: { user: User }) {
                 </div>
               )}
 
+              {/* Articles Section */}
+              {userArticles.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <BookOpen size={18} className="text-indigo-500" />
+                    Articles publiés
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userArticles.map(article => (
+                      <div key={article.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
+                        <h3 className="font-bold text-slate-900 line-clamp-1">{article.title}</h3>
+                        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{article.summary}</p>
+                        <div className="flex items-center gap-3 mt-3 text-xs text-slate-400 font-medium">
+                          <span className="flex items-center gap-1"><Heart size={12} /> {article.likes?.length || 0}</span>
+                          <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Books Section */}
+              {userBooks.length > 0 && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Library size={18} className="text-amber-500" />
+                    Bibliothèque
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userBooks.map(book => (
+                      <div key={book.id} className="flex gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
+                        {book.coverImage && (
+                          <img src={book.coverImage} alt={book.title} className="w-16 h-24 object-cover rounded shadow-sm" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-slate-900 truncate">{book.title}</h3>
+                          <p className="text-xs text-slate-500 mt-1">{book.genre}</p>
+                          <p className="text-xs text-slate-600 mt-2 line-clamp-2">{book.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* GitHub Repositories */}
               {profile.githubUrl && (
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Github size={18} className="text-slate-700" />
-                    Derniers projets GitHub
-                  </h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <Github size={18} className="text-slate-700" />
+                      {showAllRepos ? 'Tous les projets GitHub' : 'Derniers projets GitHub'}
+                    </h2>
+                    <button 
+                      onClick={() => setShowAllRepos(!showAllRepos)}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider transition-colors"
+                    >
+                      {showAllRepos ? 'Réduire' : 'Voir tout'}
+                    </button>
+                  </div>
                   
                   {loadingRepos ? (
                     <div className="flex justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                     </div>
                   ) : repos.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {repos.map(repo => (
-                        <a 
-                          key={repo.id} 
-                          href={repo.html_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="group block p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all bg-white"
-                        >
-                          <h3 className="font-bold text-indigo-600 truncate group-hover:text-indigo-700 transition-colors">{repo.name}</h3>
-                          <p className="text-sm text-slate-600 mt-2 line-clamp-2 min-h-[40px] leading-relaxed">
-                            {repo.description || "Aucune description"}
-                          </p>
-                          <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 font-semibold">
-                            {repo.language && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {repos.map(repo => (
+                          <a 
+                            key={repo.id} 
+                            href={repo.html_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="group block p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all bg-white"
+                          >
+                            <h3 className="font-bold text-indigo-600 truncate group-hover:text-indigo-700 transition-colors">{repo.name}</h3>
+                            <p className="text-sm text-slate-600 mt-2 line-clamp-2 min-h-[40px] leading-relaxed">
+                              {repo.description || "Aucune description"}
+                            </p>
+                            <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 font-semibold">
+                              {repo.language && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                                  {repo.language}
+                                </span>
+                              )}
                               <span className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                                {repo.language}
+                                <Star size={14} className="text-yellow-500" /> {repo.stargazers_count}
                               </span>
-                            )}
-                            <span className="flex items-center gap-1.5">
-                              <Star size={14} className="text-yellow-500" /> {repo.stargazers_count}
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                              <GitBranch size={14} className="text-slate-400" /> {repo.forks_count}
-                            </span>
-                          </div>
-                        </a>
-                      ))}
+                              <span className="flex items-center gap-1.5">
+                                <GitBranch size={14} className="text-slate-400" /> {repo.forks_count}
+                              </span>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                      {!showAllRepos && repos.length >= 4 && (
+                        <div className="text-center pt-2">
+                          <button 
+                            onClick={() => setShowAllRepos(true)}
+                            className="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+                          >
+                            Afficher plus de dépôts...
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100">

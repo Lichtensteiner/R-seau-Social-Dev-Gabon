@@ -17,8 +17,35 @@ service cloud.firestore {
     //   - skills: list (optional) - List of technical skills
     //   - location: string (optional) - City or region in Gabon
     //   - githubUrl: string (optional) - Link to GitHub profile
-    //   - role: string (required) - User role ('dev', 'recruiter', 'admin')
+    //   - role: string (required) - User role ('dev', 'recruiter', 'writer', 'admin')
     //   - createdAt: timestamp (required, immutable) - Account creation timestamp
+    //
+    // Collection: articles
+    // Document ID: {articleId}
+    // Fields:
+    //   - authorId: string (required, immutable) - UID of the author
+    //   - authorName: string (required) - Display name of the author
+    //   - title: string (required) - Title of the article
+    //   - content: string (required) - Markdown content
+    //   - summary: string (optional) - Short summary
+    //   - coverImage: string (optional) - URL to cover image
+    //   - tags: list (optional) - List of tags
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //   - likesCount: number (optional) - Number of likes
+    //   - viewsCount: number (optional) - Number of views
+    //
+    // Collection: books
+    // Document ID: {bookId}
+    // Fields:
+    //   - authorId: string (required, immutable) - UID of the author
+    //   - authorName: string (required) - Display name of the author
+    //   - title: string (required) - Title of the book
+    //   - description: string (required) - Description/Synopsis
+    //   - coverImage: string (optional) - URL to book cover
+    //   - purchaseUrl: string (optional) - Link to buy
+    //   - genre: string (optional) - Genre
+    //   - publishedDate: string (optional) - Date of publication
+    //   - createdAt: timestamp (required, immutable) - Timestamp when added
     //
     // Collection: posts
     // Document ID: {postId}
@@ -112,7 +139,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'followers', 'following']) &&
+      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'followers', 'following', 'phone', 'settings']) &&
              validStringLength('uid', 1, 128) &&
              validStringLength('displayName', 1, 100) &&
              isValidOptionalString('firstName', 0, 100) &&
@@ -128,10 +155,12 @@ service cloud.firestore {
              isValidOptionalString('githubUrl', 0, 200) &&
              isValidOptionalString('linkedInUrl', 0, 200) &&
              isValidOptionalString('portfolioUrl', 0, 200) &&
-             data.role in ['dev', 'recruiter', 'admin'] &&
+             data.role in ['dev', 'recruiter', 'writer', 'admin'] &&
              data.createdAt is timestamp &&
              (!('followers' in data) || data.followers is list) &&
-             (!('following' in data) || data.following is list);
+             (!('following' in data) || data.following is list) &&
+             isValidOptionalString('phone', 0, 20) &&
+             (!('settings' in data) || data.settings is map);
     }
 
     function isValidPost(data) {
@@ -189,6 +218,33 @@ service cloud.firestore {
              data.read is bool;
     }
 
+    function isValidArticle(data) {
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'title', 'content', 'summary', 'coverImage', 'tags', 'createdAt', 'likesCount', 'viewsCount']) &&
+             validStringLength('authorId', 1, 128) &&
+             validStringLength('authorName', 1, 200) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('content', 1, 50000) &&
+             isValidOptionalString('summary', 0, 500) &&
+             isValidOptionalString('coverImage', 0, 2000) &&
+             isValidList('tags', 10) &&
+             data.createdAt is timestamp &&
+             (!('likesCount' in data) || data.likesCount is number) &&
+             (!('viewsCount' in data) || data.viewsCount is number);
+    }
+
+    function isValidBook(data) {
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'title', 'description', 'coverImage', 'purchaseUrl', 'genre', 'publishedDate', 'createdAt']) &&
+             validStringLength('authorId', 1, 128) &&
+             validStringLength('authorName', 1, 200) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('description', 1, 5000) &&
+             isValidOptionalString('coverImage', 0, 2000) &&
+             isValidOptionalString('purchaseUrl', 0, 2000) &&
+             isValidOptionalString('genre', 0, 100) &&
+             isValidOptionalString('publishedDate', 0, 100) &&
+             data.createdAt is timestamp;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -199,7 +255,7 @@ service cloud.firestore {
                     isOwner(userId) &&
                     isValidUser(request.resource.data) &&
                     uidUnchanged() &&
-                    (request.resource.data.role == 'dev' || request.resource.data.role == 'recruiter' || isAdmin());
+                    (request.resource.data.role == 'dev' || request.resource.data.role == 'recruiter' || request.resource.data.role == 'writer' || isAdmin());
       allow update: if isAuthenticated() &&
                     isValidUser(request.resource.data) &&
                     uidNotModified() &&
@@ -281,6 +337,30 @@ service cloud.firestore {
                       isValidChatMessage(request.resource.data) &&
                       areImmutableFieldsUnchanged(['senderId', 'text', 'createdAt']);
       }
+    }
+
+    match /articles/{articleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    request.resource.data.authorId == request.auth.uid &&
+                    isValidArticle(request.resource.data);
+      allow update: if isAuthenticated() &&
+                    isValidArticle(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['authorId', 'createdAt']) &&
+                    (isDocOwner() || (!isDocOwner() && areImmutableFieldsUnchanged(['authorName', 'title', 'content', 'summary', 'coverImage', 'tags'])));
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /books/{bookId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    request.resource.data.authorId == request.auth.uid &&
+                    isValidBook(request.resource.data);
+      allow update: if isAuthenticated() &&
+                    isDocOwner() &&
+                    isValidBook(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['authorId', 'createdAt']);
+      allow delete: if isDocOwner() || isAdmin();
     }
   }
 }

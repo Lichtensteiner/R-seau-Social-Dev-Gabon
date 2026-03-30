@@ -11,6 +11,10 @@ import ProfilePage from './pages/ProfilePage';
 import NetworkPage from './pages/NetworkPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
+import SettingsPage from './pages/SettingsPage';
+import GitHubExplorerPage from './pages/GitHubExplorerPage';
+import ArticlesPage from './pages/ArticlesPage';
+import BooksPage from './pages/BooksPage';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -45,6 +49,10 @@ export default function App() {
           <Route path="messages" element={<MessagesPage user={user} />} />
           <Route path="profile" element={<ProfilePage user={user} />} />
           <Route path="profile/:userId" element={<ProfilePage user={user} />} />
+          <Route path="github-explorer" element={<GitHubExplorerPage />} />
+          <Route path="articles" element={<ArticlesPage user={user} />} />
+          <Route path="books" element={<BooksPage user={user} />} />
+          <Route path="settings" element={<SettingsPage user={user} />} />
         </Route>
       </Routes>
     </Router>

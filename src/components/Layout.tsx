@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { User, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle } from 'lucide-react';
+import { Home, Briefcase, User as UserIcon, LogOut, Menu, X, Users, Bell, MessageCircle, Settings, Github, BookOpen, Library } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -32,8 +32,12 @@ export default function Layout({ user }: { user: User }) {
     { name: 'Annuaire', href: '/network', icon: Users },
     { name: 'Opportunités', href: '/jobs', icon: Briefcase },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
+    { name: 'GitHub Explorer', href: '/github-explorer', icon: Github },
+    { name: 'Articles', href: '/articles', icon: BookOpen },
+    { name: 'Bibliothèque', href: '/books', icon: Library },
     { name: 'Notifications', href: '/notifications', icon: Bell, badge: unreadCount },
     { name: 'Mon Profil', href: '/profile', icon: UserIcon },
+    { name: 'Paramètres', href: '/settings', icon: Settings },
   ];
 
   return (
