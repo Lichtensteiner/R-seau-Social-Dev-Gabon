@@ -28,13 +28,13 @@ export default function Layout({ user }: { user: User }) {
   };
 
   const languages = [
-    { code: 'fr', name: 'Français' },
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Español' },
-    { code: 'de', name: 'Deutsch' },
-    { code: 'zh', name: '中文' },
-    { code: 'ja', name: '日本語' },
-    { code: 'ko', name: '한국어' }
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' }
   ];
 
   useEffect(() => {
@@ -157,11 +157,12 @@ export default function Layout({ user }: { user: User }) {
                       <button
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-2 ${
                           i18n.language.startsWith(lang.code) ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-600 hover:bg-slate-50'
                         }`}
                       >
-                        {lang.name}
+                        <span className="text-sm">{lang.flag}</span>
+                        <span>{lang.name}</span>
                       </button>
                     ))}
                   </div>
