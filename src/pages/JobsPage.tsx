@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { User } from 'firebase/auth';
 import { collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Briefcase, MapPin, Clock, Plus, Trash2, Building2 } from 'lucide-react';
+import { Briefcase, MapPin, Clock, Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { logActivity } from '../lib/activity';
@@ -107,6 +107,10 @@ export default function JobsPage({ user }: { user: User }) {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Opportunités</h1>
           <p className="text-slate-500 mt-1">Trouvez votre prochaine mission au Gabon</p>
+          <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full w-fit">
+            <UserCheck size={14} />
+            Espace Recrutement: M. Mve Zogo Ludovic Martinien
+          </div>
         </div>
         
         {(userRole === 'recruiter' || userRole === 'admin' || userRole === 'dev') && (

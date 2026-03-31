@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 import { 
   Code2, 
   Users, 
@@ -16,14 +18,41 @@ import {
   MessageSquare, 
   Heart,
   ArrowRight,
+  UserCheck,
   Cpu,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Clock,
+  Languages,
+  Menu,
+  X
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 
 export default function LandingPage({ user }: { user: User | null }) {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
+  const languages = [
+    { code: 'fr', name: 'Français' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'zh', name: '中文' },
+    { code: 'ja', name: '日本語' },
+    { code: 'ko', name: '한국어' }
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -56,37 +85,129 @@ export default function LandingPage({ user }: { user: User | null }) {
             </span>
           </div>
           
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <a href="#mission" className="hover:text-indigo-600 transition-colors">Mission</a>
-            <a href="#features" className="hover:text-indigo-600 transition-colors">Fonctionnalités</a>
-            <a href="#context" className="hover:text-indigo-600 transition-colors">Contexte</a>
-            <a href="#creator" className="hover:text-indigo-600 transition-colors">L'Auteur</a>
-            <Link to="/" className="hover:text-indigo-600 transition-colors">Présentation</Link>
+          <div className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <a href="#mission" className="hover:text-indigo-600 transition-colors">{t('nav.mission')}</a>
+            <a href="#features" className="hover:text-indigo-600 transition-colors">{t('nav.features')}</a>
+            <a href="#network" className="hover:text-indigo-600 transition-colors">{t('sidebar.network')}</a>
+            <a href="#recruitment" className="hover:text-indigo-600 transition-colors">{t('hero.recruitment.title')}</a>
+            <a href="#context" className="hover:text-indigo-600 transition-colors">{t('nav.context')}</a>
+            <a href="#creator" className="hover:text-indigo-600 transition-colors">{t('nav.creator')}</a>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            {user ? (
-              <Link 
-                to="/app" 
-                className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm sm:text-base font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
-              >
-                Accéder au réseau
-              </Link>
-            ) : (
-              <>
-                <Link to="/auth" className="text-xs sm:text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">
-                  Connexion
-                </Link>
+            {/* Real-time Clock Header */}
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+              <Clock size={14} className="text-indigo-500 animate-pulse" />
+              <span className="text-xs font-mono font-bold text-slate-600">
+                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            </div>
+
+            {/* Language Switcher */}
+            <div className="relative group">
+              <button className="p-2 text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                <Languages size={20} />
+                <span className="hidden md:inline text-xs uppercase font-bold">{i18n.language.split('-')[0]}</span>
+              </button>
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-slate-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="p-2 space-y-1">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        changeLanguage(lang.code);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        i18n.language.startsWith(lang.code) ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {lang.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2">
+              {user ? (
                 <Link 
-                  to="/auth" 
-                  className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm sm:text-base font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                  to="/app/network" 
+                  className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
                 >
-                  Rejoindre
+                  {t('nav.access')}
                 </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link to="/auth" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors px-2">
+                    {t('nav.login')}
+                  </Link>
+                  <Link 
+                    to="/auth" 
+                    className="px-4 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                  >
+                    {t('nav.join')}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-slate-600 hover:text-indigo-600 transition-colors"
+            >
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:hidden bg-white border-b border-slate-100 py-6 px-4 space-y-4 shadow-xl"
+          >
+            <div className="flex flex-col gap-4 text-base font-semibold text-slate-600">
+              <a href="#mission" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('nav.mission')}</a>
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('nav.features')}</a>
+              <a href="#network" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('sidebar.network')}</a>
+              <a href="#recruitment" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('hero.recruitment.title')}</a>
+              <a href="#context" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('nav.context')}</a>
+              <a href="#creator" onClick={() => setMobileMenuOpen(false)} className="hover:text-indigo-600 transition-colors py-2 border-b border-slate-50">{t('nav.creator')}</a>
+            </div>
+            
+            <div className="flex flex-col gap-3 pt-4">
+              {user ? (
+                <Link 
+                  to="/app/network" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full px-6 py-3 bg-indigo-600 text-white rounded-xl text-center font-bold shadow-lg"
+                >
+                  {t('nav.access')}
+                </Link>
+              ) : (
+                <>
+                  <Link 
+                    to="/auth" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full px-6 py-3 bg-slate-100 text-slate-700 rounded-xl text-center font-bold"
+                  >
+                    {t('nav.login')}
+                  </Link>
+                  <Link 
+                    to="/auth" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full px-6 py-3 bg-indigo-600 text-white rounded-xl text-center font-bold shadow-lg"
+                  >
+                    {t('nav.join')}
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -101,18 +222,18 @@ export default function LandingPage({ user }: { user: User | null }) {
             >
               <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold border border-indigo-100">
                 <Zap size={16} />
-                Le premier réseau social tech du Gabon
+                {t('hero.badge')}
               </motion.div>
               
               <motion.h1 variants={itemVariants} className="text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1]">
-                Propulsez votre carrière <br />
+                {t('hero.title')} <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
-                  Tech & Littéraire
+                  {t('hero.subtitle')}
                 </span>
               </motion.h1>
               
               <motion.p variants={itemVariants} className="text-xl text-slate-600 leading-relaxed max-w-xl">
-                Une plateforme unique conçue pour connecter les développeurs, les écrivains et les recruteurs du Gabon. Partagez votre code, publiez vos articles et faites rayonner le talent gabonais.
+                {t('hero.description')}
               </motion.p>
               
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
@@ -120,14 +241,14 @@ export default function LandingPage({ user }: { user: User | null }) {
                   onClick={() => navigate(user ? '/app' : '/auth')}
                   className="px-6 py-3.5 sm:px-8 sm:py-4 bg-indigo-600 text-white rounded-2xl font-bold text-base sm:text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2 group"
                 >
-                  Commencer l'aventure
+                  {t('hero.cta_start')}
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </button>
                 <a 
                   href="#mission"
                   className="px-6 py-3.5 sm:px-8 sm:py-4 bg-white text-slate-700 border border-slate-200 rounded-2xl font-bold text-base sm:text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                 >
-                  En savoir plus
+                  {t('hero.cta_learn')}
                 </a>
               </motion.div>
 
@@ -143,8 +264,8 @@ export default function LandingPage({ user }: { user: User | null }) {
                   ))}
                 </div>
                 <div className="text-sm">
-                  <p className="font-bold text-slate-900">+500 membres actifs</p>
-                  <p className="text-slate-500 text-xs uppercase tracking-wider font-semibold">Rejoignez la communauté</p>
+                  <p className="font-bold text-slate-900">{t('hero.members')}</p>
+                  <p className="text-slate-500 text-xs uppercase tracking-wider font-semibold">{t('hero.join_community')}</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -249,14 +370,21 @@ export default function LandingPage({ user }: { user: User | null }) {
                   { icon: <Code2 />, title: "Pour les Développeurs", desc: "Exposez vos projets GitHub, partagez vos snippets de code et trouvez des opportunités de carrière." },
                   { icon: <BookOpen />, title: "Pour les Écrivains", desc: "Publiez vos articles, recevez des retours de la communauté et faites-vous un nom." },
                   { icon: <Library />, title: "Bibliothèque Numérique", desc: "Une vitrine pour les ouvrages locaux, permettant aux auteurs de promouvoir leurs livres." },
-                  { icon: <Briefcase />, title: "Espace Recrutement", desc: "Les entreprises peuvent poster des offres et trouver les meilleurs profils IT du Gabon." }
+                  { icon: <Briefcase />, title: "Espace Recrutement", desc: "Les entreprises peuvent poster des offres et trouver les meilleurs profils IT du Gabon.", link: "#recruitment" }
                 ].map((f, i) => (
                   <div key={i} className="flex gap-6 group">
                     <div className="shrink-0 w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                       {f.icon}
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-slate-900 mb-1">{f.title}</h4>
+                      <h4 className="text-xl font-bold text-slate-900 mb-1">
+                        {f.link ? (
+                          <a href={f.link} className="hover:text-indigo-600 transition-colors flex items-center gap-2">
+                            {f.title}
+                            <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </a>
+                        ) : f.title}
+                      </h4>
                       <p className="text-slate-600">{f.desc}</p>
                     </div>
                   </div>
@@ -331,6 +459,123 @@ export default function LandingPage({ user }: { user: User | null }) {
         </div>
       </section>
 
+      {/* Recruitment Space Section */}
+      <section id="recruitment" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-indigo-600 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="grid md:grid-cols-2 items-center">
+              <div className="p-12 md:p-16 text-white space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium border border-white/10">
+                  <Briefcase size={16} />
+                  {t('hero.recruitment.title')}
+                </div>
+                <h2 className="text-4xl font-bold tracking-tight">
+                  {t('hero.recruitment.subtitle')}
+                </h2>
+                <p className="text-xl text-indigo-100 leading-relaxed">
+                  {t('hero.recruitment.description')}
+                </p>
+                <div className="pt-6 flex flex-col sm:flex-row gap-4">
+                  <button 
+                    onClick={() => navigate(user ? '/app/jobs' : '/auth')}
+                    className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                  >
+                    {t('nav.access')}
+                    <ArrowRight size={20} />
+                  </button>
+                </div>
+              </div>
+              <div className="relative h-full min-h-[400px] bg-indigo-700 p-12 flex flex-col justify-center items-center text-center space-y-6">
+                <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
+                  <UserCheck size={48} className="text-white" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-indigo-200 uppercase tracking-widest text-sm font-bold">
+                    {t('hero.recruitment.contact_label')}
+                  </p>
+                  <h3 className="text-3xl font-bold text-white">
+                    {t('hero.recruitment.contact_name')}
+                  </h3>
+                  <p className="text-indigo-100 italic">
+                    ludo.consulting3@gmail.com
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm">
+                    IT Recruitment
+                  </div>
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm">
+                    Gabon Tech
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Network Section */}
+      <section id="network" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100">
+            <div className="grid md:grid-cols-2 items-center">
+              <div className="relative h-full min-h-[400px] bg-gradient-to-br from-purple-600 to-indigo-700 p-12 flex flex-col justify-center items-center text-center space-y-6">
+                <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
+                  <Users size={48} className="text-white" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-purple-100 uppercase tracking-widest text-sm font-bold">
+                    {t('hero.network.title')}
+                  </p>
+                  <h3 className="text-3xl font-bold text-white">
+                    {t('hero.network.subtitle')}
+                  </h3>
+                </div>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm text-white flex items-center gap-2">
+                    <Code2 size={14} />
+                    Developers
+                  </div>
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm text-white flex items-center gap-2">
+                    <BookOpen size={14} />
+                    Writers
+                  </div>
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm text-white flex items-center gap-2">
+                    <Users size={14} />
+                    Recruiters
+                  </div>
+                  <div className="px-4 py-2 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10 text-sm text-white flex items-center gap-2">
+                    <Shield size={14} />
+                    Admins
+                  </div>
+                </div>
+              </div>
+              <div className="p-12 md:p-16 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium border border-indigo-100">
+                  <Globe size={16} />
+                  {t('sidebar.network')}
+                </div>
+                <h2 className="text-4xl font-bold text-slate-900 tracking-tight">
+                  {t('hero.network.subtitle')}
+                </h2>
+                <p className="text-xl text-slate-600 leading-relaxed">
+                  {t('hero.network.description')}
+                </p>
+                <div className="pt-6">
+                  <button 
+                    onClick={() => navigate(user ? '/app/network' : '/auth')}
+                    className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+                  >
+                    {t('hero.network.cta')}
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Creator Section */}
       <section id="creator" className="py-24">
         <div className="max-w-7xl mx-auto px-4">
@@ -397,20 +642,20 @@ export default function LandingPage({ user }: { user: User | null }) {
                 <span className="text-xl sm:text-2xl font-bold">DevGabon</span>
               </div>
               <p className="text-slate-400 max-w-sm leading-relaxed text-sm sm:text-base">
-                La plateforme sociale qui connecte l'intelligence technologique et la créativité littéraire du Gabon.
+                {t('footer.description')}
               </p>
             </div>
             <div>
-              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Liens Rapides</h4>
+              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">{t('footer.quick_links')}</h4>
               <ul className="space-y-3 sm:space-y-4 text-slate-400 text-sm sm:text-base">
-                <li><a href="#mission" className="hover:text-white transition-colors">Mission</a></li>
-                <li><a href="#features" className="hover:text-white transition-colors">Fonctionnalités</a></li>
-                <li><a href="#context" className="hover:text-white transition-colors">Contexte</a></li>
-                <li><Link to="/auth" className="hover:text-white transition-colors">Rejoindre</Link></li>
+                <li><a href="#mission" className="hover:text-white transition-colors">{t('nav.mission')}</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">{t('nav.features')}</a></li>
+                <li><a href="#context" className="hover:text-white transition-colors">{t('nav.context')}</a></li>
+                <li><Link to="/auth" className="hover:text-white transition-colors">{t('nav.join')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Contact</h4>
+              <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">{t('footer.contact')}</h4>
               <ul className="space-y-3 sm:space-y-4 text-slate-400 text-sm sm:text-base">
                 <li className="flex items-center gap-2">
                   <Globe size={16} className="text-indigo-400" />
@@ -428,10 +673,10 @@ export default function LandingPage({ user }: { user: User | null }) {
             </div>
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-xs sm:text-sm text-center md:text-left">
-            <p>© 2026 DevGabon. Fièrement développé par M. Mve Zogo Ludovic Martinien.</p>
+            <p>© 2026 DevGabon. {t('footer.developed_by')}</p>
             <div className="flex gap-6">
-              <Link to="/privacy" className="hover:text-white transition-colors">Confidentialité</Link>
-              <Link to="/terms" className="hover:text-white transition-colors">Conditions</Link>
+              <Link to="/privacy" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
             </div>
           </div>
         </div>

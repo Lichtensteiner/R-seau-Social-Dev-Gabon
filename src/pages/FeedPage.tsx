@@ -3,10 +3,12 @@ import type { FormEvent } from 'react';
 import { User } from 'firebase/auth';
 import { collection, addDoc, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, serverTimestamp, arrayUnion, arrayRemove, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Send, MessageSquare, Heart, Trash2, Clock } from 'lucide-react';
+import { Send, MessageSquare, Heart, Trash2, Clock, Languages } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistance } from '../lib/date-utils';
 import { logActivity } from '../lib/activity';
+import { useTranslation } from 'react-i18next';
+import { GoogleGenAI } from "@google/genai";
 
 interface Comment {
   id: string;
@@ -31,11 +33,42 @@ interface Post {
 }
 
 export default function FeedPage({ user }: { user: User }) {
+  const { t, i18n } = useTranslation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [commentContents, setCommentContents] = useState<Record<string, string>>({});
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translatingIds, setTranslatingIds] = useState<Record<string, boolean>>({});
+
+  const handleTranslate = async (postId: string, content: string) => {
+    if (translations[postId]) {
+      setTranslations(prev => {
+        const next = { ...prev };
+        delete next[postId];
+        return next;
+      });
+      return;
+    }
+
+    try {
+      setTranslatingIds(prev => ({ ...prev, [postId]: true }));
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Translate the following social media post to ${i18n.language}. Only return the translated text, nothing else:\n\n${content}`,
+      });
+      
+      if (response.text) {
+        setTranslations(prev => ({ ...prev, [postId]: response.text }));
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+    } finally {
+      setTranslatingIds(prev => ({ ...prev, [postId]: false }));
+    }
+  };
 
   useEffect(() => {
     const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
@@ -77,14 +110,14 @@ export default function FeedPage({ user }: { user: User }) {
       setNewPostContent('');
     } catch (error) {
       console.error("Error creating post:", error);
-      alert("Erreur lors de la publication.");
+      alert(t('feed.error_publish'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce post ?")) return;
+    if (!window.confirm(t('feed.delete_post_confirm'))) return;
     try {
       await deleteDoc(doc(db, 'posts', postId));
     } catch (error) {
@@ -180,7 +213,7 @@ export default function FeedPage({ user }: { user: User }) {
   };
 
   const handleDeleteComment = async (postId: string, commentId: string) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce commentaire ?")) return;
+    if (!window.confirm(t('feed.delete_comment_confirm'))) return;
     try {
       await deleteDoc(doc(db, 'posts', postId, 'comments', commentId));
       
@@ -242,7 +275,7 @@ export default function FeedPage({ user }: { user: User }) {
             <textarea
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
-              placeholder="Partagez quelque chose avec la communauté..."
+              placeholder={t('feed.placeholder')}
               className="flex-1 resize-none border-none focus:ring-0 p-2 text-slate-700 placeholder-slate-400 bg-transparent min-h-[80px]"
             />
           </div>
@@ -253,7 +286,7 @@ export default function FeedPage({ user }: { user: User }) {
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
               <Send size={18} />
-              Publier
+              {t('feed.publish')}
             </button>
           </div>
         </form>
@@ -263,7 +296,7 @@ export default function FeedPage({ user }: { user: User }) {
       <div className="space-y-4">
         {posts.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-            <p className="text-slate-500">Aucune publication pour le moment. Soyez le premier !</p>
+            <p className="text-slate-500">{t('feed.no_posts')}</p>
           </div>
         ) : (
           posts.map(post => (
@@ -298,7 +331,23 @@ export default function FeedPage({ user }: { user: User }) {
               </div>
               
               <div className="mt-4 text-slate-800 whitespace-pre-wrap">
-                {post.content}
+                {translations[post.id] || post.content}
+                {translations[post.id] && (
+                  <div className="mt-2 text-xs text-indigo-600 italic border-l-2 border-indigo-200 pl-2">
+                    Traduit par IA
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 flex items-center gap-4">
+                <button
+                  onClick={() => handleTranslate(post.id, post.content)}
+                  disabled={translatingIds[post.id]}
+                  className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                >
+                  <Languages size={14} />
+                  {translatingIds[post.id] ? t('feed.translating') : (translations[post.id] ? "Voir l'original" : t('feed.translate'))}
+                </button>
               </div>
 
               <div className="mt-5 pt-4 border-t border-slate-100 flex gap-6">
@@ -371,7 +420,7 @@ export default function FeedPage({ user }: { user: User }) {
                         type="text"
                         value={commentContents[post.id] || ''}
                         onChange={(e) => setCommentContents(prev => ({ ...prev, [post.id]: e.target.value }))}
-                        placeholder="Écrire un commentaire..."
+                        placeholder={t('feed.write_comment')}
                         className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       />
                       <button
