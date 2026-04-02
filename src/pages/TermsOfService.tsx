@@ -4,9 +4,9 @@ import { FileText, ArrowLeft, BookOpen, ShieldCheck, UserPlus, AlertCircle } fro
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-8 border-b border-slate-100 bg-indigo-600 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
+        <div className="p-8 border-b border-slate-100 dark:border-dark-border bg-indigo-600 text-white">
           <Link to="/" className="inline-flex items-center gap-2 text-indigo-100 hover:text-white mb-6 transition-colors">
             <ArrowLeft size={20} />
             Retour à l'accueil
@@ -22,35 +22,35 @@ export default function TermsOfService() {
           </div>
         </div>
 
-        <div className="p-8 prose prose-slate max-w-none">
+        <div className="p-8 prose prose-slate dark:prose-invert max-w-none">
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <ShieldCheck className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <ShieldCheck className="text-indigo-600 dark:text-indigo-400" size={24} />
               1. Acceptation des Conditions
             </h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               En accédant à DevGabon, vous acceptez sans réserve les présentes conditions générales d'utilisation. Ces conditions sont régies par les lois de la République Gabonaise.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <BookOpen className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <BookOpen className="text-indigo-600 dark:text-indigo-400" size={24} />
               2. Propriété Intellectuelle et Droits d'Auteur
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
               DevGabon accorde une importance capitale au respect de la création intellectuelle, conformément à la <strong>Loi n°1/87</strong> sur la protection du droit d'auteur au Gabon.
             </p>
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+            <div className="bg-slate-50 dark:bg-dark-bg p-6 rounded-2xl border border-slate-100 dark:border-dark-border space-y-4">
               <div>
-                <h4 className="font-bold text-slate-900 mb-1">Contenu Utilisateur</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-bold text-slate-900 dark:text-white mb-1">Contenu Utilisateur</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Vous restez propriétaire de vos publications (articles, code, livres). En publiant sur DevGabon, vous nous accordez une licence non-exclusive pour diffuser votre contenu sur la plateforme.
                 </p>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 mb-1">Protection de la Littérature</h4>
-                <p className="text-sm text-slate-600">
+                <h4 className="font-bold text-slate-900 dark:text-white mb-1">Protection de la Littérature</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Toute reproduction non autorisée d'ouvrages littéraires ou de code source protégé est strictement interdite et peut faire l'objet de poursuites judiciaires.
                 </p>
               </div>
@@ -58,24 +58,24 @@ export default function TermsOfService() {
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <UserPlus className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <UserPlus className="text-indigo-600 dark:text-indigo-400" size={24} />
               3. Inscription et Responsabilité
             </h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               L'utilisateur s'engage à fournir des informations exactes lors de son inscription. Vous êtes seul responsable de la confidentialité de votre compte et de toutes les activités qui y sont liées.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <AlertCircle className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <AlertCircle className="text-indigo-600 dark:text-indigo-400" size={24} />
               4. Comportement de l'Utilisateur
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
               Il est strictement interdit de publier des contenus :
             </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
+            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400 space-y-2">
               <li>Contraires à l'ordre public et aux bonnes mœurs au Gabon.</li>
               <li>Diffamatoires, injurieux ou incitant à la haine.</li>
               <li>Portant atteinte aux droits de propriété intellectuelle de tiers.</li>
@@ -84,21 +84,21 @@ export default function TermsOfService() {
           </section>
 
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">5. Limitation de Responsabilité</h2>
-            <p className="text-slate-600 leading-relaxed">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">5. Limitation de Responsabilité</h2>
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               DevGabon s'efforce de maintenir la plateforme accessible 24h/24, mais ne saurait être tenue responsable des interruptions de service dues à la maintenance ou à des cas de force majeure.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">6. Litiges et Juridiction</h2>
-            <p className="text-slate-600 leading-relaxed">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">6. Litiges et Juridiction</h2>
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               Tout litige relatif à l'utilisation de DevGabon sera soumis à la compétence exclusive des tribunaux de Libreville, Gabon.
             </p>
           </section>
 
-          <div className="pt-8 border-t border-slate-100 text-center">
-            <p className="text-slate-500 text-sm">
+          <div className="pt-8 border-t border-slate-100 dark:border-dark-border text-center">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               © 2026 DevGabon - Conditions conformes aux lois gabonaises sur le numérique et la littérature.
             </p>
           </div>

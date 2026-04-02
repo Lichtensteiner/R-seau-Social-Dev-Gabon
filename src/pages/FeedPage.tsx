@@ -7,8 +7,10 @@ import { Send, MessageSquare, Heart, Trash2, Clock, Languages } from 'lucide-rea
 import { Link } from 'react-router-dom';
 import { formatDistance } from '../lib/date-utils';
 import { logActivity } from '../lib/activity';
+import { updateLeaderboardPoints } from '../lib/leaderboard';
 import { useTranslation } from 'react-i18next';
 import { GoogleGenAI } from "@google/genai";
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 interface Comment {
   id: string;
@@ -79,7 +81,7 @@ export default function FeedPage({ user }: { user: User }) {
       })) as Post[];
       setPosts(postsData);
     }, (error) => {
-      console.error("Error fetching posts:", error);
+      handleFirestoreError(error, OperationType.LIST, 'posts');
     });
 
     return () => unsubscribe();
@@ -106,6 +108,15 @@ export default function FeedPage({ user }: { user: User }) {
         likes: [],
         commentsCount: 0
       });
+      
+      // Update leaderboard points
+      await updateLeaderboardPoints(
+        user.uid,
+        userData?.displayName || user.displayName || 'Développeur',
+        userData?.photoURL || user.photoURL || undefined,
+        'post_create'
+      );
+
       await logActivity(user.uid, userData?.displayName || user.displayName || 'Développeur', 'post_create', 'A publié un nouveau post');
       setNewPostContent('');
     } catch (error) {
@@ -158,6 +169,8 @@ export default function FeedPage({ user }: { user: User }) {
           p.id === postId ? { ...p, comments: commentsData, commentsCount: commentsData.length } : p
         )
       );
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, `posts/${postId}/comments`);
     });
   };
 
@@ -190,6 +203,14 @@ export default function FeedPage({ user }: { user: User }) {
           commentsCount: (postSnap.data().commentsCount || 0) + 1
         });
       }
+
+      // Update leaderboard points
+      await updateLeaderboardPoints(
+        user.uid,
+        userData?.displayName || user.displayName || 'Développeur',
+        userData?.photoURL || user.photoURL || undefined,
+        'comment_create'
+      );
 
       // Notify post author
       if (postAuthorId !== user.uid) {
@@ -262,24 +283,24 @@ export default function FeedPage({ user }: { user: User }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 transition-colors duration-300">
       {/* Create Post */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-dark-border p-4">
         <form onSubmit={handleCreatePost}>
           <div className="flex gap-4">
             <img 
               src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || user.email}&background=random`} 
               alt="Avatar" 
-              className="w-10 h-10 rounded-full bg-slate-200 object-cover"
+              className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 object-cover border border-white dark:border-dark-border"
             />
             <textarea
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
               placeholder={t('feed.placeholder')}
-              className="flex-1 resize-none border-none focus:ring-0 p-2 text-slate-700 placeholder-slate-400 bg-transparent min-h-[80px]"
+              className="flex-1 resize-none border-none focus:ring-0 p-2 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 bg-transparent min-h-[80px]"
             />
           </div>
-          <div className="flex justify-end mt-3 pt-3 border-t border-slate-100">
+          <div className="flex justify-end mt-3 pt-3 border-t border-slate-100 dark:border-dark-border">
             <button
               type="submit"
               disabled={loading || !newPostContent.trim()}
@@ -295,26 +316,26 @@ export default function FeedPage({ user }: { user: User }) {
       {/* Feed */}
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-            <p className="text-slate-500">{t('feed.no_posts')}</p>
+          <div className="text-center py-12 bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border">
+            <p className="text-slate-500 dark:text-slate-400">{t('feed.no_posts')}</p>
           </div>
         ) : (
           posts.map(post => (
-            <div key={post.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+            <div key={post.id} className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-dark-border p-5">
               <div className="flex justify-between items-start">
                 <div className="flex gap-3">
                   <Link to={`/app/profile/${post.authorId}`}>
                     <img 
                       src={post.authorPhoto || `https://ui-avatars.com/api/?name=${post.authorName}&background=random`} 
                       alt={post.authorName}
-                      className="w-10 h-10 rounded-full bg-slate-200 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 object-cover cursor-pointer hover:opacity-80 transition-opacity border border-white dark:border-dark-border"
                     />
                   </Link>
                   <div>
                     <Link to={`/app/profile/${post.authorId}`}>
-                      <h3 className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">{post.authorName}</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">{post.authorName}</h3>
                     </Link>
-                    <div className="flex items-center text-xs text-slate-500 mt-0.5">
+                    <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       <Clock size={12} className="mr-1" />
                       {formatDistance(post.createdAt)}
                     </div>
@@ -323,17 +344,17 @@ export default function FeedPage({ user }: { user: User }) {
                 {post.authorId === user.uid && (
                   <button 
                     onClick={() => handleDeletePost(post.id)}
-                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                    className="text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors p-1"
                   >
                     <Trash2 size={18} />
                   </button>
                 )}
               </div>
               
-              <div className="mt-4 text-slate-800 whitespace-pre-wrap">
+              <div className="mt-4 text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
                 {translations[post.id] || post.content}
                 {translations[post.id] && (
-                  <div className="mt-2 text-xs text-indigo-600 italic border-l-2 border-indigo-200 pl-2">
+                  <div className="mt-2 text-xs text-indigo-600 dark:text-indigo-400 italic border-l-2 border-indigo-200 dark:border-indigo-900 pl-2">
                     Traduit par IA
                   </div>
                 )}
@@ -343,20 +364,20 @@ export default function FeedPage({ user }: { user: User }) {
                 <button
                   onClick={() => handleTranslate(post.id, post.content)}
                   disabled={translatingIds[post.id]}
-                  className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
                 >
                   <Languages size={14} />
                   {translatingIds[post.id] ? t('feed.translating') : (translations[post.id] ? "Voir l'original" : t('feed.translate'))}
                 </button>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-slate-100 flex gap-6">
+              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-dark-border flex gap-6">
                 <button 
                   onClick={() => handleLike(post.id, post.likes, post.authorId)}
                   className={`flex items-center gap-1.5 transition-colors ${
                     post.likes?.includes(user.uid) 
                       ? 'text-pink-600' 
-                      : 'text-slate-500 hover:text-pink-600'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-pink-600'
                   }`}
                 >
                   <Heart size={18} fill={post.likes?.includes(user.uid) ? "currentColor" : "none"} />
@@ -365,7 +386,7 @@ export default function FeedPage({ user }: { user: User }) {
                 <button 
                   onClick={() => toggleComments(post.id)}
                   className={`flex items-center gap-1.5 transition-colors ${
-                    post.showComments ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-600'
+                    post.showComments ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                   }`}
                 >
                   <MessageSquare size={18} />
@@ -375,7 +396,7 @@ export default function FeedPage({ user }: { user: User }) {
 
               {/* Comments Section */}
               {post.showComments && (
-                <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-dark-border space-y-4">
                   {/* Comment List */}
                   <div className="space-y-4">
                     {post.comments?.map(comment => (
@@ -383,24 +404,24 @@ export default function FeedPage({ user }: { user: User }) {
                         <img 
                           src={comment.authorPhoto || `https://ui-avatars.com/api/?name=${comment.authorName}&background=random`} 
                           alt={comment.authorName}
-                          className="w-8 h-8 rounded-full bg-slate-200 object-cover shrink-0"
+                          className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 object-cover shrink-0 border border-white dark:border-dark-border"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="bg-slate-50 rounded-2xl rounded-tl-none px-4 py-2.5 inline-block max-w-full">
+                          <div className="bg-slate-50 dark:bg-dark-bg rounded-2xl rounded-tl-none px-4 py-2.5 inline-block max-w-full border border-slate-100 dark:border-dark-border">
                             <div className="flex items-baseline justify-between gap-4">
-                              <span className="font-semibold text-sm text-slate-900">{comment.authorName}</span>
+                              <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">{comment.authorName}</span>
                               {comment.authorId === user.uid && (
                                 <button 
                                   onClick={() => handleDeleteComment(post.id, comment.id)}
-                                  className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="text-slate-400 dark:text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                   <Trash2 size={14} />
                                 </button>
                               )}
                             </div>
-                            <p className="text-sm text-slate-700 mt-0.5 break-words">{comment.content}</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 mt-0.5 break-words">{comment.content}</p>
                           </div>
-                          <div className="text-[11px] text-slate-400 mt-1 ml-2">
+                          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 ml-2">
                             {formatDistance(comment.createdAt)}
                           </div>
                         </div>
@@ -413,7 +434,7 @@ export default function FeedPage({ user }: { user: User }) {
                     <img 
                       src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || user.email}&background=random`} 
                       alt="Avatar" 
-                      className="w-8 h-8 rounded-full bg-slate-200 object-cover shrink-0"
+                      className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 object-cover shrink-0 border border-white dark:border-dark-border"
                     />
                     <div className="flex-1 relative">
                       <input
@@ -421,12 +442,12 @@ export default function FeedPage({ user }: { user: User }) {
                         value={commentContents[post.id] || ''}
                         onChange={(e) => setCommentContents(prev => ({ ...prev, [post.id]: e.target.value }))}
                         placeholder={t('feed.write_comment')}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        className="w-full bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-full pl-4 pr-10 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       />
                       <button
                         type="submit"
                         disabled={loadingComments[post.id] || !commentContents[post.id]?.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors disabled:opacity-50"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full transition-colors disabled:opacity-50"
                       >
                         <Send size={16} />
                       </button>

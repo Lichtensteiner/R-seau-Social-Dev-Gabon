@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { logActivity } from '../lib/activity';
+import { updateLeaderboardPoints } from '../lib/leaderboard';
 
 interface Article {
   id: string;
@@ -80,6 +81,14 @@ export default function ArticlesPage({ user }: { user: User }) {
         likesCount: 0,
         viewsCount: 0
       });
+
+      // Update leaderboard points
+      await updateLeaderboardPoints(
+        user.uid,
+        authorName,
+        user.photoURL || undefined,
+        'article_create'
+      );
 
       await logActivity(user.uid, authorName, 'article_create', `A publié l'article: ${newTitle}`);
 
@@ -160,15 +169,15 @@ export default function ArticlesPage({ user }: { user: User }) {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200">
+          <div className="p-3 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none">
             <BookOpen className="text-white w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Articles & Publications</h1>
-            <p className="text-slate-500">Partagez vos connaissances et lisez les articles de la communauté.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Articles & Publications</h1>
+            <p className="text-slate-500 dark:text-slate-400">Partagez vos connaissances et lisez les articles de la communauté.</p>
           </div>
         </div>
         
@@ -191,7 +200,7 @@ export default function ArticlesPage({ user }: { user: User }) {
           placeholder="Rechercher un article, un auteur ou un tag..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition-all text-lg"
+          className="block w-full pl-12 pr-4 py-4 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition-all text-lg text-slate-900 dark:text-slate-100"
         />
       </div>
 
@@ -207,7 +216,7 @@ export default function ArticlesPage({ user }: { user: User }) {
               layoutId={article.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col"
+              className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-dark-border overflow-hidden shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col"
               onClick={() => handleViewArticle(article)}
             >
               {article.coverImage ? (
@@ -221,42 +230,42 @@ export default function ArticlesPage({ user }: { user: User }) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               ) : (
-                <div className="h-48 bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                  <BookOpen size={48} className="text-slate-300" />
+                <div className="h-48 bg-slate-100 dark:bg-dark-bg flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-800 transition-colors">
+                  <BookOpen size={48} className="text-slate-300 dark:text-slate-600" />
                 </div>
               )}
               
               <div className="p-6 flex-grow flex flex-col">
                 <div className="flex items-center gap-2 mb-3">
                   {article.tags?.slice(0, 2).map(tag => (
-                    <span key={tag} className="px-2 py-1 bg-indigo-50 text-indigo-600 text-xs font-medium rounded-md">
+                    <span key={tag} className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-md">
                       #{tag}
                     </span>
                   ))}
                 </div>
                 
-                <h3 className="text-xl font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {article.title}
                 </h3>
                 
-                <p className="text-slate-600 text-sm mb-4 line-clamp-3 flex-grow">
+                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-3 flex-grow">
                   {article.summary || article.content.substring(0, 150) + '...'}
                 </p>
                 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100 dark:border-dark-border">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden">
-                      <UserIcon size={16} className="text-slate-500" />
+                    <div className="w-8 h-8 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden">
+                      <UserIcon size={16} className="text-slate-500 dark:text-slate-400" />
                     </div>
                     <div className="text-xs">
-                      <p className="font-semibold text-slate-900">{article.authorName}</p>
-                      <p className="text-slate-500">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{article.authorName}</p>
+                      <p className="text-slate-500 dark:text-slate-400">
                         {article.createdAt?.toDate() ? formatDistanceToNow(article.createdAt.toDate(), { addSuffix: true, locale: fr }) : 'À l\'instant'}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-slate-400 text-xs">
+                  <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500 text-xs">
                     <span className="flex items-center gap-1">
                       <Eye size={14} />
                       {article.viewsCount || 0}
@@ -272,10 +281,10 @@ export default function ArticlesPage({ user }: { user: User }) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-          <BookOpen size={64} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900">Aucun article trouvé</h3>
-          <p className="text-slate-500 mt-2">Soyez le premier à partager vos connaissances !</p>
+        <div className="text-center py-20 bg-white dark:bg-dark-surface rounded-3xl border-2 border-dashed border-slate-200 dark:border-dark-border">
+          <BookOpen size={64} className="mx-auto text-slate-300 dark:text-slate-700 mb-4" />
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Aucun article trouvé</h3>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Soyez le premier à partager vos connaissances !</p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors"
@@ -293,13 +302,13 @@ export default function ArticlesPage({ user }: { user: User }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+              className="bg-white dark:bg-dark-surface rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-dark-border"
             >
-              <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <h2 className="text-2xl font-bold text-slate-900">Nouvel Article</h2>
+              <div className="px-8 py-6 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/50 dark:bg-dark-surface/50">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Nouvel Article</h2>
                 <button 
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                  className="p-2 hover:bg-slate-200 dark:hover:bg-dark-bg rounded-full transition-colors text-slate-500 dark:text-slate-400"
                 >
                   <X size={24} />
                 </button>
@@ -309,29 +318,29 @@ export default function ArticlesPage({ user }: { user: User }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Titre de l'article</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Titre de l'article</label>
                       <input
                         type="text"
                         required
                         value={newTitle}
                         onChange={(e) => setNewTitle(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                         placeholder="Ex: Les bases de React en 2024"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Résumé (optionnel)</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Résumé (optionnel)</label>
                       <textarea
                         value={newSummary}
                         onChange={(e) => setNewSummary(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-24 resize-none"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-24 resize-none text-slate-900 dark:text-slate-100"
                         placeholder="Un court texte pour donner envie de lire..."
                       />
                     </div>
-
+...
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Image de couverture</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Image de couverture</label>
                       <div className="flex gap-2">
                         <div className="relative flex-grow">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -341,7 +350,7 @@ export default function ArticlesPage({ user }: { user: User }) {
                             type="url"
                             value={newCoverImage}
                             onChange={(e) => setNewCoverImage(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                             placeholder="URL de l'image..."
                           />
                         </div>
@@ -349,7 +358,7 @@ export default function ArticlesPage({ user }: { user: User }) {
                           type="button"
                           onClick={() => coverInputRef.current?.click()}
                           disabled={uploadingCover}
-                          className="px-4 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-600 font-medium disabled:opacity-50"
+                          className="px-4 py-3 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium disabled:opacity-50"
                         >
                           {uploadingCover ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload size={20} />}
                           <span className="hidden sm:inline">Téléverser</span>
@@ -365,7 +374,7 @@ export default function ArticlesPage({ user }: { user: User }) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Tags (séparés par des virgules)</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Tags (séparés par des virgules)</label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Tag className="h-5 w-5 text-slate-400" />
@@ -374,7 +383,7 @@ export default function ArticlesPage({ user }: { user: User }) {
                           type="text"
                           value={newTags}
                           onChange={(e) => setNewTags(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                           placeholder="react, frontend, gabon"
                         />
                       </div>
@@ -383,12 +392,12 @@ export default function ArticlesPage({ user }: { user: User }) {
 
                   <div className="flex flex-col h-full">
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-sm font-semibold text-slate-700">Contenu (Markdown supporté)</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Contenu (Markdown supporté)</label>
                       <button
                         type="button"
                         onClick={() => contentInputRef.current?.click()}
                         disabled={uploadingContent}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 uppercase tracking-wider disabled:opacity-50"
+                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 uppercase tracking-wider disabled:opacity-50"
                       >
                         {uploadingContent ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText size={14} />}
                         Importer un fichier (.md, .txt)
@@ -405,7 +414,7 @@ export default function ArticlesPage({ user }: { user: User }) {
                       required
                       value={newContent}
                       onChange={(e) => setNewContent(e.target.value)}
-                      className="w-full flex-grow px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-sm min-h-[300px]"
+                      className="w-full flex-grow px-4 py-3 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-sm min-h-[300px] text-slate-900 dark:text-slate-100"
                       placeholder="# Mon super article..."
                     />
                   </div>
@@ -415,14 +424,14 @@ export default function ArticlesPage({ user }: { user: User }) {
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-6 py-3 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl transition-colors"
+                    className="px-6 py-3 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-dark-bg rounded-xl transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-none disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send size={20} />}
                     Publier l'article
@@ -442,16 +451,16 @@ export default function ArticlesPage({ user }: { user: User }) {
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
-              className="bg-white w-full max-w-5xl h-full sm:h-[95vh] sm:rounded-3xl overflow-hidden flex flex-col relative"
+              className="bg-white dark:bg-dark-surface w-full max-w-5xl h-full sm:h-[95vh] sm:rounded-3xl overflow-hidden flex flex-col relative border border-slate-200 dark:border-dark-border shadow-2xl"
             >
               <button 
                 onClick={() => setSelectedArticle(null)}
-                className="absolute top-4 right-4 z-10 p-2 bg-white/20 backdrop-blur-md hover:bg-white/40 rounded-full transition-colors text-white sm:text-slate-500 sm:bg-slate-100 sm:hover:bg-slate-200"
+                className="absolute top-4 right-4 z-10 p-2 bg-white/20 dark:bg-black/20 backdrop-blur-md hover:bg-white/40 dark:hover:bg-black/40 rounded-full transition-colors text-white sm:text-slate-500 dark:sm:text-slate-400 sm:bg-slate-100 dark:sm:bg-dark-bg sm:hover:bg-slate-200 dark:sm:hover:bg-dark-surface"
               >
                 <X size={24} />
               </button>
 
-              <div className="overflow-y-auto flex-grow">
+              <div className="overflow-y-auto flex-grow custom-scrollbar">
                 {selectedArticle.coverImage && (
                   <div className="h-64 sm:h-96 w-full relative">
                     <img 
@@ -460,30 +469,30 @@ export default function ArticlesPage({ user }: { user: User }) {
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-dark-surface via-transparent to-transparent" />
                   </div>
                 )}
 
                 <div className="px-6 sm:px-12 py-8 max-w-3xl mx-auto">
                   <div className="flex items-center gap-2 mb-6">
                     {selectedArticle.tags?.map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-full">
+                      <span key={tag} className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium rounded-full">
                         #{tag}
                       </span>
                     ))}
                   </div>
 
-                  <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
+                  <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 leading-tight">
                     {selectedArticle.title}
                   </h1>
 
-                  <div className="flex items-center gap-4 mb-10 pb-8 border-b border-slate-100">
-                    <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden">
-                      <UserIcon size={24} className="text-slate-500" />
+                  <div className="flex items-center gap-4 mb-10 pb-8 border-b border-slate-100 dark:border-dark-border">
+                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden">
+                      <UserIcon size={24} className="text-slate-500 dark:text-slate-400" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 text-lg">{selectedArticle.authorName}</p>
-                      <div className="flex items-center gap-3 text-slate-500 text-sm">
+                      <p className="font-bold text-slate-900 dark:text-slate-100 text-lg">{selectedArticle.authorName}</p>
+                      <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-sm">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />
                           {selectedArticle.createdAt?.toDate() ? formatDistanceToNow(selectedArticle.createdAt.toDate(), { addSuffix: true, locale: fr }) : 'À l\'instant'}
@@ -496,19 +505,19 @@ export default function ArticlesPage({ user }: { user: User }) {
                     </div>
                   </div>
 
-                  <div className="prose prose-indigo prose-lg max-w-none text-slate-700 leading-relaxed">
+                  <div className="prose prose-indigo dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-slate-300 leading-relaxed">
                     <ReactMarkdown>{selectedArticle.content}</ReactMarkdown>
                   </div>
                   
-                  <div className="mt-12 pt-8 border-t border-slate-100 flex items-center justify-between">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-100 transition-colors">
+                  <div className="mt-12 pt-8 border-t border-slate-100 dark:border-dark-border flex items-center justify-between">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
                       <ThumbsUp size={20} />
                       J'aime cet article
                     </button>
                     
                     <div className="flex items-center gap-4">
-                      <span className="text-slate-500 text-sm">Partager :</span>
-                      <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                      <span className="text-slate-500 dark:text-slate-400 text-sm">Partager :</span>
+                      <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         <Send size={20} />
                       </button>
                     </div>

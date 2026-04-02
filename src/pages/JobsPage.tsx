@@ -102,12 +102,12 @@ export default function JobsPage({ user }: { user: User }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 transition-colors duration-300">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Opportunités</h1>
-          <p className="text-slate-500 mt-1">Trouvez votre prochaine mission au Gabon</p>
-          <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 font-medium bg-indigo-50 px-3 py-1 rounded-full w-fit">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Opportunités</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Trouvez votre prochaine mission au Gabon</p>
+          <div className="mt-2 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded-full w-fit">
             <UserCheck size={14} />
             Espace Recrutement: M. Mve Zogo Ludovic Martinien
           </div>
@@ -125,38 +125,38 @@ export default function JobsPage({ user }: { user: User }) {
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-lg font-semibold mb-4">Nouvelle opportunité</h2>
+        <div className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-dark-border p-6">
+          <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Nouvelle opportunité</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Titre du poste</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Titre du poste</label>
                 <input
                   required
                   type="text"
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Développeur React Native"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Entreprise</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Entreprise</label>
                 <input
                   required
                   type="text"
                   value={formData.companyName}
                   onChange={e => setFormData({...formData, companyName: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="TechGabon"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Type de contrat</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type de contrat</label>
                 <select
                   value={formData.type}
                   onChange={e => setFormData({...formData, type: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="CDI">CDI</option>
                   <option value="CDD">CDD</option>
@@ -165,37 +165,37 @@ export default function JobsPage({ user }: { user: User }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Localisation</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Localisation</label>
                 <input
                   required
                   type="text"
                   value={formData.location}
                   onChange={e => setFormData({...formData, location: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Libreville, Gabon (ou Remote)"
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
               <textarea
                 required
                 rows={4}
                 value={formData.description}
                 onChange={e => setFormData({...formData, description: e.target.value})}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Décrivez la mission, les responsabilités..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Compétences (séparées par des virgules)</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Compétences (séparées par des virgules)</label>
               <input
                 type="text"
                 value={formData.skills}
                 onChange={e => setFormData({...formData, skills: e.target.value})}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="React, Node.js, TypeScript"
               />
             </div>
@@ -215,30 +215,30 @@ export default function JobsPage({ user }: { user: User }) {
 
       <div className="grid gap-4">
         {jobs.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-            <p className="text-slate-500">Aucune offre pour le moment.</p>
+          <div className="text-center py-12 bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border">
+            <p className="text-slate-500 dark:text-slate-400">Aucune offre pour le moment.</p>
           </div>
         ) : (
           jobs.map(job => (
-            <div key={job.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div key={job.id} className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-dark-border p-6 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">{job.title}</h2>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{job.title}</h2>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1">
-                      <Building2 size={16} className="text-slate-400" />
+                      <Building2 size={16} className="text-slate-400 dark:text-slate-500" />
                       {job.companyName}
                     </span>
                     <span className="flex items-center gap-1">
-                      <MapPin size={16} className="text-slate-400" />
+                      <MapPin size={16} className="text-slate-400 dark:text-slate-500" />
                       {job.location}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Briefcase size={16} className="text-slate-400" />
+                      <Briefcase size={16} className="text-slate-400 dark:text-slate-500" />
                       {job.type}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock size={16} className="text-slate-400" />
+                      <Clock size={16} className="text-slate-400 dark:text-slate-500" />
                       {job.createdAt ? formatDistanceToNow(job.createdAt?.toDate ? job.createdAt.toDate() : new Date(job.createdAt), { addSuffix: true, locale: fr }) : "à l'instant"}
                     </span>
                   </div>
@@ -253,22 +253,22 @@ export default function JobsPage({ user }: { user: User }) {
                 )}
               </div>
               
-              <div className="mt-4 text-slate-700 whitespace-pre-wrap line-clamp-3">
+              <div className="mt-4 text-slate-700 dark:text-slate-300 whitespace-pre-wrap line-clamp-3">
                 {job.description}
               </div>
 
               {job.skills && job.skills.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {job.skills.map(skill => (
-                    <span key={skill} className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">
+                    <span key={skill} className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 text-xs font-medium rounded-full">
                       {skill}
                     </span>
                   ))}
                 </div>
               )}
               
-              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-                <button className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-dark-border flex justify-end">
+                <button className="px-4 py-2 bg-slate-900 dark:bg-dark-bg text-white rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-dark-border transition-colors border dark:border-dark-border">
                   Postuler
                 </button>
               </div>

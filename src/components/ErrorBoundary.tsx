@@ -47,20 +47,20 @@ export default class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center p-4 transition-colors duration-300">
+          <div className="max-w-md w-full bg-white dark:bg-dark-surface rounded-2xl shadow-xl border border-slate-200 dark:border-dark-border p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Oups ! Quelque chose s'est mal passé</h1>
-            <p className="text-slate-600 mb-8">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Oups ! Quelque chose s'est mal passé</h1>
+            <p className="text-slate-600 dark:text-slate-400 mb-8">
               {errorMessage}
             </p>
             
             {isPermissionError && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 text-left">
-                <p className="text-sm text-amber-800 font-medium mb-1">Détails techniques :</p>
-                <p className="text-xs text-amber-700 font-mono break-all">
+              <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg p-4 mb-8 text-left">
+                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium mb-1">Détails techniques :</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 font-mono break-all">
                   {this.state.error?.message}
                 </p>
               </div>

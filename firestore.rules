@@ -79,6 +79,58 @@ service cloud.firestore {
     //   - details: string (optional) - Additional details
     //   - timestamp: timestamp (required, immutable) - When it occurred
     //
+    // Collection: leaderboard
+    // Document ID: {userId}
+    // Fields:
+    //   - userId: string (required, immutable) - UID of the user
+    //   - displayName: string (optional) - Name of the user
+    //   - photoURL: string (optional) - Photo URL of the user
+    //   - points: number (required) - Total points
+    //   - rank: number (optional) - Current rank
+    //   - badges: list (optional) - Earned badges
+    //   - updatedAt: timestamp (required) - Last update
+    //
+    // Collection: challenges
+    // Document ID: {challengeId}
+    // Fields:
+    //   - title: string (required) - Title
+    //   - description: string (required) - Description
+    //   - difficulty: string (required) - 'Easy', 'Medium', 'Hard', 'Elite'
+    //   - points: number (required) - Points awarded
+    //   - type: string (required) - 'Flash', 'Duel', 'Hackathon'
+    //   - status: string (required) - 'Active', 'Closed', 'Upcoming'
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //
+    // Collection: impact_projects
+    // Document ID: {projectId}
+    // Fields:
+    //   - title: string (required) - Title
+    //   - description: string (required) - Description
+    //   - authorId: string (required, immutable) - UID of creator
+    //   - impactScore: number (required) - Impact index
+    //   - status: string (required) - 'Draft', 'Published', 'Featured'
+    //   - tags: list (optional) - Relevant tags
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //
+    // Collection: mentorships
+    // Document ID: {mentorshipId}
+    // Fields:
+    //   - mentorId: string (required, immutable) - UID of mentor
+    //   - menteeId: string (required, immutable) - UID of mentee
+    //   - status: string (required) - 'Pending', 'Active', 'Completed', 'Cancelled'
+    //   - startDate: timestamp (required, immutable) - Start date
+    //   - endDate: timestamp (optional) - End date
+    //
+    // Collection: technical_tests
+    // Document ID: {testId}
+    // Fields:
+    //   - title: string (required) - Title
+    //   - description: string (required) - Description
+    //   - duration: number (required) - Duration in minutes
+    //   - difficulty: string (required) - 'Junior', 'Intermediate', 'Senior', 'Expert'
+    //   - questions: list (required) - List of questions
+    //   - createdAt: timestamp (required, immutable) - Creation timestamp
+    //
     // ===============================================================
 
     // ===============================================================
@@ -148,7 +200,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'lastLoginAt', 'followers', 'following', 'phone', 'settings']) &&
+      return hasOnlyAllowedFields(['uid', 'displayName', 'firstName', 'lastName', 'pseudo', 'email', 'photoURL', 'bio', 'skills', 'location', 'status', 'experienceYears', 'githubUrl', 'linkedInUrl', 'portfolioUrl', 'role', 'createdAt', 'lastLoginAt', 'followers', 'following', 'phone', 'settings', 'theme']) &&
              (!( 'uid' in data) || validStringLength('uid', 1, 128)) &&
              (!( 'displayName' in data) || validStringLength('displayName', 1, 100)) &&
              isValidOptionalString('firstName', 0, 100) &&
@@ -170,7 +222,8 @@ service cloud.firestore {
              (!('followers' in data) || data.followers is list) &&
              (!('following' in data) || data.following is list) &&
              isValidOptionalString('phone', 0, 20) &&
-             (!('settings' in data) || data.settings is map);
+             (!('settings' in data) || data.settings is map) &&
+             (!('theme' in data) || data.theme in ['light', 'dark']);
     }
 
     function isValidPost(data) {
@@ -262,6 +315,85 @@ service cloud.firestore {
              validStringLength('type', 1, 100) &&
              isValidOptionalString('details', 0, 2000) &&
              data.timestamp is timestamp;
+    }
+
+    function isValidLeaderboardEntry(data) {
+      return hasOnlyAllowedFields(['userId', 'displayName', 'photoURL', 'points', 'rank', 'badges', 'updatedAt']) &&
+             validStringLength('userId', 1, 128) &&
+             isValidOptionalString('displayName', 0, 200) &&
+             isValidOptionalString('photoURL', 0, 2000) &&
+             data.points is number &&
+             (!('rank' in data) || data.rank is number) &&
+             (!('badges' in data) || data.badges is list) &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidChallenge(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'difficulty', 'points', 'type', 'status', 'createdAt']) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('description', 1, 5000) &&
+             data.difficulty in ['Easy', 'Medium', 'Hard', 'Elite'] &&
+             data.points is number &&
+             data.type in ['Flash', 'Duel', 'Hackathon'] &&
+             data.status in ['Active', 'Closed', 'Upcoming'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidChallengeSubmission(data) {
+      return hasOnlyAllowedFields(['challengeId', 'userId', 'code', 'status', 'score', 'submittedAt']) &&
+             validStringLength('challengeId', 1, 128) &&
+             validStringLength('userId', 1, 128) &&
+             validStringLength('code', 1, 50000) &&
+             data.status in ['Pending', 'Accepted', 'Rejected'] &&
+             (!('score' in data) || data.score is number) &&
+             data.submittedAt is timestamp;
+    }
+
+    function isValidImpactProject(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'authorId', 'impactScore', 'status', 'tags', 'createdAt']) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('description', 1, 5000) &&
+             validStringLength('authorId', 1, 128) &&
+             data.impactScore is number &&
+             data.status in ['Draft', 'Published', 'Featured'] &&
+             (!('tags' in data) || data.tags is list) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidMentorship(data) {
+      return hasOnlyAllowedFields(['mentorId', 'menteeId', 'status', 'startDate', 'endDate']) &&
+             validStringLength('mentorId', 1, 128) &&
+             validStringLength('menteeId', 1, 128) &&
+             data.status in ['Pending', 'Active', 'Completed', 'Cancelled'] &&
+             data.startDate is timestamp &&
+             (!('endDate' in data) || data.endDate is timestamp);
+    }
+
+    function isValidCertification(data) {
+      return hasOnlyAllowedFields(['userId', 'title', 'issuerId', 'date']) &&
+             validStringLength('userId', 1, 128) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('issuerId', 1, 128) &&
+             data.date is timestamp;
+    }
+
+    function isValidTechnicalTest(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'duration', 'difficulty', 'questions', 'createdAt']) &&
+             validStringLength('title', 1, 200) &&
+             validStringLength('description', 1, 5000) &&
+             data.duration is number &&
+             data.difficulty in ['Junior', 'Intermediate', 'Senior', 'Expert'] &&
+             data.questions is list &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidTestResult(data) {
+      return hasOnlyAllowedFields(['userId', 'testId', 'score', 'status', 'completedAt']) &&
+             validStringLength('userId', 1, 128) &&
+             validStringLength('testId', 1, 128) &&
+             data.score is number &&
+             data.status in ['Passed', 'Failed', 'In-Progress'] &&
+             data.completedAt is timestamp;
     }
 
     // ===============================================================
@@ -388,6 +520,65 @@ service cloud.firestore {
                     request.resource.data.userId == request.auth.uid &&
                     isValidActivity(request.resource.data);
       allow update, delete: if isAdmin();
+    }
+
+    match /leaderboard/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidLeaderboardEntry(request.resource.data);
+    }
+
+    match /challenges/{challengeId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+
+      match /submissions/{submissionId} {
+        allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+        allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      isValidChallengeSubmission(request.resource.data);
+        allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidChallengeSubmission(request.resource.data);
+      }
+    }
+
+    match /impact_projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                    request.resource.data.authorId == request.auth.uid &&
+                    isValidImpactProject(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    (isDocOwner() || isAdmin()) &&
+                    isValidImpactProject(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['authorId', 'createdAt']);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /mentorships/{mentorshipId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.mentorId || request.auth.uid == resource.data.menteeId || isAdmin());
+      allow create: if isAuthenticated() && 
+                    (request.resource.data.mentorId == request.auth.uid || request.resource.data.menteeId == request.auth.uid) &&
+                    isValidMentorship(request.resource.data);
+      allow update: if isAuthenticated() && 
+                    (request.auth.uid == resource.data.mentorId || request.auth.uid == resource.data.menteeId || isAdmin()) &&
+                    isValidMentorship(request.resource.data) &&
+                    areImmutableFieldsUnchanged(['mentorId', 'menteeId', 'startDate']);
+    }
+
+    match /certifications/{certId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /technical_tests/{testId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /test_results/{resultId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    isValidTestResult(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidTestResult(request.resource.data);
     }
   }
 }

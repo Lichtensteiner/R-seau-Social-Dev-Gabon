@@ -79,31 +79,31 @@ export default function NetworkPage({ user }: { user: User }) {
   });
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 transition-colors duration-300">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Annuaire des Talents</h1>
-        <p className="text-slate-500 mt-1">Découvrez et connectez-vous avec les professionnels IT du Gabon</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Annuaire des Talents</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Découvrez et connectez-vous avec les professionnels IT du Gabon</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
+      <div className="bg-white dark:bg-dark-surface p-4 rounded-xl shadow-sm border border-slate-200 dark:border-dark-border flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-slate-400" />
+            <Search className="h-5 w-5 text-slate-400 dark:text-slate-500" />
           </div>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher par nom, compétence (ex: React) ou ville..."
-            className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         <div className="w-full md:w-48">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full pl-3 pr-10 py-2 border border-slate-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="all">Tous les profils</option>
             <option value="dev">Développeurs</option>
@@ -121,12 +121,12 @@ export default function NetworkPage({ user }: { user: User }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredUsers.length === 0 ? (
-            <div className="col-span-full text-center py-12 bg-white rounded-xl border border-slate-200">
-              <p className="text-slate-500">Aucun profil ne correspond à votre recherche.</p>
+            <div className="col-span-full text-center py-12 bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border">
+              <p className="text-slate-500 dark:text-slate-400">Aucun profil ne correspond à votre recherche.</p>
             </div>
           ) : (
             filteredUsers.map(u => (
-              <div key={u.uid} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+              <div key={u.uid} className="bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden flex flex-col">
                 <div className="h-16 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
                 <div className="px-6 pb-6 flex-1 flex flex-col">
                   <div className="-mt-8 mb-3 flex justify-between items-end">
@@ -134,52 +134,52 @@ export default function NetworkPage({ user }: { user: User }) {
                       <img 
                         src={u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName || u.email}&background=random`} 
                         alt={u.displayName}
-                        className="w-16 h-16 rounded-full border-4 border-white bg-slate-200 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-16 h-16 rounded-full border-4 border-white dark:border-dark-surface bg-slate-200 dark:bg-dark-bg object-cover cursor-pointer hover:opacity-80 transition-opacity"
                       />
                     </Link>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-400 capitalize">
                       {u.role === 'dev' ? 'Développeur' : u.role === 'writer' ? 'Écrivain' : u.role === 'recruiter' ? 'Recruteur' : 'Admin'}
                     </span>
                   </div>
                   
                   <Link to={`/app/profile/${u.uid}`}>
-                    <h3 className="text-lg font-bold text-slate-900 truncate hover:text-indigo-600 transition-colors cursor-pointer">{u.displayName}</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">{u.displayName}</h3>
                   </Link>
                   
-                  <div className="mt-2 space-y-2 text-sm text-slate-600 flex-1">
+                  <div className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-400 flex-1">
                     {u.location && (
                       <div className="flex items-center gap-2">
-                        <MapPin size={16} className="text-slate-400 shrink-0" />
+                        <MapPin size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="truncate">{u.location}</span>
                       </div>
                     )}
                     {u.bio && (
-                      <p className="line-clamp-2 text-slate-500 mt-2">{u.bio}</p>
+                      <p className="line-clamp-2 text-slate-500 dark:text-slate-400 mt-2">{u.bio}</p>
                     )}
                   </div>
 
                   {u.skills && u.skills.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {u.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-md">
+                        <span key={skill} className="px-2 py-0.5 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-400 text-xs font-medium rounded-md">
                           {skill}
                         </span>
                       ))}
                       {u.skills.length > 3 && (
-                        <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs font-medium rounded-md">
+                        <span className="px-2 py-0.5 bg-slate-50 dark:bg-dark-bg text-slate-500 dark:text-slate-500 text-xs font-medium rounded-md">
                           +{u.skills.length - 3}
                         </span>
                       )}
                     </div>
                   )}
 
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex gap-3">
+                  <div className="mt-6 pt-4 border-t border-slate-100 dark:border-dark-border flex gap-3">
                     {u.uid !== user.uid && (
                       <button 
                         onClick={() => handleFollowToggle(u)}
                         className={`flex-1 flex justify-center items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           u.followers?.includes(user.uid)
-                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            ? 'bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-dark-border'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700'
                         }`}
                       >
@@ -189,14 +189,14 @@ export default function NetworkPage({ user }: { user: User }) {
                     )}
                     <Link 
                       to={`/app/profile/${u.uid}`}
-                      className="flex-1 flex justify-center items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors"
+                      className="flex-1 flex justify-center items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
                     >
                       <UserIcon size={16} />
                       Profil
                     </Link>
                     <a 
                       href={`mailto:${u.email}`}
-                      className="flex justify-center items-center p-2 bg-slate-50 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                      className="flex justify-center items-center p-2 bg-slate-50 dark:bg-dark-bg text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-border transition-colors"
                       title="Envoyer un email"
                     >
                       <Mail size={18} />
@@ -206,7 +206,7 @@ export default function NetworkPage({ user }: { user: User }) {
                         href={u.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex justify-center items-center p-2 bg-slate-50 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                        className="flex justify-center items-center p-2 bg-slate-50 dark:bg-dark-bg text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-border transition-colors"
                         title="GitHub"
                       >
                         <Github size={18} />

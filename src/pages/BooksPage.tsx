@@ -119,15 +119,15 @@ export default function BooksPage({ user }: { user: User }) {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 transition-colors duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-amber-600 rounded-xl shadow-lg shadow-amber-200">
+          <div className="p-3 bg-amber-600 rounded-xl shadow-lg shadow-amber-200 dark:shadow-none">
             <Library className="text-white w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Bibliothèque & Livres</h1>
-            <p className="text-slate-500">Découvrez les ouvrages écrits par les membres de la communauté.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Bibliothèque & Livres</h1>
+            <p className="text-slate-500 dark:text-slate-400">Découvrez les ouvrages écrits par les membres de la communauté.</p>
           </div>
         </div>
         
@@ -150,7 +150,7 @@ export default function BooksPage({ user }: { user: User }) {
           placeholder="Rechercher un livre, un auteur ou un genre..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm transition-all text-lg"
+          className="block w-full pl-12 pr-4 py-4 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm transition-all text-lg text-slate-900 dark:text-slate-100"
         />
       </div>
 
@@ -165,10 +165,10 @@ export default function BooksPage({ user }: { user: User }) {
               key={book.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col"
+              className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-dark-border overflow-hidden shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col"
               onClick={() => setSelectedBook(book)}
             >
-              <div className="aspect-[2/3] overflow-hidden relative bg-slate-100">
+              <div className="aspect-[2/3] overflow-hidden relative bg-slate-100 dark:bg-dark-bg">
                 {book.coverImage ? (
                   <img 
                     src={book.coverImage} 
@@ -178,8 +178,8 @@ export default function BooksPage({ user }: { user: User }) {
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                    <BookIcon size={64} className="text-slate-300 mb-4" />
-                    <p className="text-slate-400 font-bold text-lg leading-tight">{book.title}</p>
+                    <BookIcon size={64} className="text-slate-300 dark:text-slate-700 mb-4" />
+                    <p className="text-slate-400 dark:text-slate-500 font-bold text-lg leading-tight">{book.title}</p>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
@@ -193,16 +193,16 @@ export default function BooksPage({ user }: { user: User }) {
               </div>
               
               <div className="p-4 flex-grow flex flex-col">
-                <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1 group-hover:text-amber-600 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 line-clamp-1 group-hover:text-amber-600 transition-colors">
                   {book.title}
                 </h3>
-                <p className="text-slate-500 text-sm mb-3">par {book.authorName}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">par {book.authorName}</p>
                 
                 <div className="mt-auto flex items-center justify-between">
-                   <span className="text-xs text-slate-400">
+                   <span className="text-xs text-slate-400 dark:text-slate-500">
                      {book.publishedDate || 'Date inconnue'}
                    </span>
-                   <button className="p-2 text-amber-600 hover:bg-amber-50 rounded-full transition-colors">
+                   <button className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-full transition-colors">
                      <ExternalLink size={16} />
                    </button>
                 </div>
@@ -211,10 +211,10 @@ export default function BooksPage({ user }: { user: User }) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-          <Library size={64} className="mx-auto text-slate-300 mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900">Aucun livre trouvé</h3>
-          <p className="text-slate-500 mt-2">Soyez le premier à ajouter votre ouvrage !</p>
+        <div className="text-center py-20 bg-white dark:bg-dark-surface rounded-3xl border-2 border-dashed border-slate-200 dark:border-dark-border">
+          <Library size={64} className="mx-auto text-slate-300 dark:text-slate-700 mb-4" />
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Aucun livre trouvé</h3>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Soyez le premier à ajouter votre ouvrage !</p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="mt-6 px-6 py-2 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition-colors"
@@ -232,13 +232,13 @@ export default function BooksPage({ user }: { user: User }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+              className="bg-white dark:bg-dark-surface rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-dark-border"
             >
-              <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <h2 className="text-2xl font-bold text-slate-900">Ajouter un Livre</h2>
+              <div className="px-8 py-6 border-b border-slate-100 dark:border-dark-border flex items-center justify-between bg-slate-50/50 dark:bg-dark-surface/50">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Ajouter un Livre</h2>
                 <button 
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                  className="p-2 hover:bg-slate-200 dark:hover:bg-dark-bg rounded-full transition-colors text-slate-500 dark:text-slate-400"
                 >
                   <X size={24} />
                 </button>
@@ -247,52 +247,52 @@ export default function BooksPage({ user }: { user: User }) {
               <form onSubmit={handleCreateBook} className="p-8 overflow-y-auto flex-grow space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Titre du livre</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Titre du livre</label>
                     <input
                       type="text"
                       required
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                      className="w-full px-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                       placeholder="Le titre de votre ouvrage"
                     />
                   </div>
                   
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Description / Synopsis</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Description / Synopsis</label>
                     <textarea
                       required
                       value={newDescription}
                       onChange={(e) => setNewDescription(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all h-32 resize-none"
+                      className="w-full px-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all h-32 resize-none text-slate-900 dark:text-slate-100"
                       placeholder="De quoi parle votre livre ?"
                     />
                   </div>
-
+...
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Genre</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Genre</label>
                     <input
                       type="text"
                       value={newGenre}
                       onChange={(e) => setNewGenre(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                      className="w-full px-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                       placeholder="Roman, Essai, Tech..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Date de publication</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Date de publication</label>
                     <input
                       type="text"
                       value={newPublishedDate}
                       onChange={(e) => setNewPublishedDate(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                      className="w-full px-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                       placeholder="Ex: Mars 2024"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Image de couverture</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Image de couverture</label>
                     <div className="flex gap-2">
                       <div className="relative flex-grow">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -302,7 +302,7 @@ export default function BooksPage({ user }: { user: User }) {
                           type="url"
                           value={newCoverImage}
                           onChange={(e) => setNewCoverImage(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                          className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                           placeholder="URL de l'image..."
                         />
                       </div>
@@ -310,7 +310,7 @@ export default function BooksPage({ user }: { user: User }) {
                         type="button"
                         onClick={() => coverInputRef.current?.click()}
                         disabled={uploadingCover}
-                        className="px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 text-slate-600 font-medium disabled:opacity-50"
+                        className="px-4 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium disabled:opacity-50"
                       >
                         {uploadingCover ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload size={20} />}
                         <span className="hidden sm:inline">Téléverser</span>
@@ -326,7 +326,7 @@ export default function BooksPage({ user }: { user: User }) {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Lien d'achat (optionnel)</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Lien d'achat (optionnel)</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <ExternalLink className="h-5 w-5 text-slate-400" />
@@ -335,7 +335,7 @@ export default function BooksPage({ user }: { user: User }) {
                         type="url"
                         value={newPurchaseUrl}
                         onChange={(e) => setNewPurchaseUrl(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-slate-900 dark:text-slate-100"
                         placeholder="Amazon, Fnac, Site perso..."
                       />
                     </div>
@@ -346,14 +346,14 @@ export default function BooksPage({ user }: { user: User }) {
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-6 py-2 text-slate-600 font-semibold hover:bg-slate-100 rounded-xl transition-colors"
+                    className="px-6 py-2 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-dark-bg rounded-xl transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-8 py-2 bg-amber-600 text-white rounded-xl font-semibold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100 disabled:opacity-50"
+                    className="flex items-center gap-2 px-8 py-2 bg-amber-600 text-white rounded-xl font-semibold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100 dark:shadow-none disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus size={20} />}
                     Ajouter le livre
@@ -373,9 +373,9 @@ export default function BooksPage({ user }: { user: User }) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white w-full max-w-4xl rounded-3xl overflow-hidden flex flex-col sm:flex-row shadow-2xl"
+              className="bg-white dark:bg-dark-surface w-full max-w-4xl rounded-3xl overflow-hidden flex flex-col sm:flex-row shadow-2xl border border-slate-200 dark:border-dark-border"
             >
-              <div className="w-full sm:w-1/3 bg-slate-100 relative">
+              <div className="w-full sm:w-1/3 bg-slate-100 dark:bg-dark-bg relative">
                 {selectedBook.coverImage ? (
                   <img 
                     src={selectedBook.coverImage} 
@@ -385,7 +385,7 @@ export default function BooksPage({ user }: { user: User }) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center p-12">
-                    <BookIcon size={120} className="text-slate-300" />
+                    <BookIcon size={120} className="text-slate-300 dark:text-slate-700" />
                   </div>
                 )}
                 <button 
@@ -399,41 +399,41 @@ export default function BooksPage({ user }: { user: User }) {
               <div className="w-full sm:w-2/3 p-8 sm:p-12 relative flex flex-col">
                 <button 
                   onClick={() => setSelectedBook(null)}
-                  className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hidden sm:block"
+                  className="absolute top-6 right-6 p-2 hover:bg-slate-100 dark:hover:bg-dark-bg rounded-full transition-colors text-slate-400 dark:text-slate-500 hidden sm:block"
                 >
                   <X size={24} />
                 </button>
 
                 <div className="flex items-center gap-2 mb-4">
                   {selectedBook.genre && (
-                    <span className="px-3 py-1 bg-amber-50 text-amber-600 text-xs font-bold uppercase tracking-wider rounded-full">
+                    <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider rounded-full">
                       {selectedBook.genre}
                     </span>
                   )}
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-2">
                   {selectedBook.title}
                 </h2>
-                <p className="text-xl text-slate-500 mb-8">par {selectedBook.authorName}</p>
+                <p className="text-xl text-slate-500 dark:text-slate-400 mb-8">par {selectedBook.authorName}</p>
 
-                <div className="prose prose-slate prose-lg max-w-none text-slate-600 mb-10 flex-grow">
+                <div className="prose prose-slate dark:prose-invert prose-lg max-w-none text-slate-600 dark:text-slate-300 mb-10 flex-grow">
                   <p>{selectedBook.description}</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 mt-auto pt-8 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-auto pt-8 border-t border-slate-100 dark:border-dark-border">
                   {selectedBook.purchaseUrl && (
                     <a 
                       href={selectedBook.purchaseUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-600 text-white rounded-2xl font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-amber-600 text-white rounded-2xl font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100 dark:shadow-none"
                     >
                       Acheter le livre
                       <ExternalLink size={20} />
                     </a>
                   )}
-                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
                     <Calendar size={16} />
                     Publié en {selectedBook.publishedDate || 'Date inconnue'}
                   </div>

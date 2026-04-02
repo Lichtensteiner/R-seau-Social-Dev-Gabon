@@ -15,6 +15,11 @@ import SettingsPage from './pages/SettingsPage';
 import GitHubExplorerPage from './pages/GitHubExplorerPage';
 import ArticlesPage from './pages/ArticlesPage';
 import BooksPage from './pages/BooksPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import BattlegroundPage from './pages/BattlegroundPage';
+import ImpactGabonPage from './pages/ImpactGabonPage';
+import MentorshipPage from './pages/MentorshipPage';
+import CommandoRecruitmentPage from './pages/CommandoRecruitmentPage';
 import LandingPage from './pages/LandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -24,6 +29,8 @@ import { handleFirestoreError, OperationType } from './lib/firestore-errors';
 import { doc, updateDoc, getDoc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import { logActivity } from './lib/activity';
 import { UserProfile } from './types';
+
+import { ThemeProvider } from './contexts/ThemeContext';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -79,7 +86,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#050505]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -87,29 +94,36 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage user={user} />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/app" />} />
-          
-          <Route path="/app" element={user ? <Layout user={user} /> : <Navigate to="/auth" />}>
-            <Route index element={<FeedPage user={user} />} />
-            <Route path="jobs" element={<JobsPage user={user} />} />
-            <Route path="network" element={<NetworkPage user={user!} />} />
-            <Route path="notifications" element={<NotificationsPage user={user} />} />
-            <Route path="messages" element={<MessagesPage user={user} />} />
-            <Route path="profile" element={<ProfilePage user={user} />} />
-            <Route path="profile/:userId" element={<ProfilePage user={user} />} />
-            <Route path="github-explorer" element={<GitHubExplorerPage />} />
-            <Route path="articles" element={<ArticlesPage user={user} />} />
-            <Route path="books" element={<BooksPage user={user} />} />
-            <Route path="settings" element={<SettingsPage user={user} />} />
-            <Route path="admin/users" element={isAdmin(user) ? <AdminUsersPage /> : <Navigate to="/app" />} />
-          </Route>
-        </Routes>
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage user={user} />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/app" />} />
+            
+            <Route path="/app" element={user ? <Layout user={user} /> : <Navigate to="/auth" />}>
+              <Route index element={<FeedPage user={user} />} />
+              <Route path="jobs" element={<JobsPage user={user} />} />
+              <Route path="network" element={<NetworkPage user={user!} />} />
+              <Route path="notifications" element={<NotificationsPage user={user} />} />
+              <Route path="messages" element={<MessagesPage user={user} />} />
+              <Route path="profile" element={<ProfilePage user={user} />} />
+              <Route path="profile/:userId" element={<ProfilePage user={user} />} />
+              <Route path="github-explorer" element={<GitHubExplorerPage />} />
+              <Route path="articles" element={<ArticlesPage user={user} />} />
+              <Route path="books" element={<BooksPage user={user} />} />
+              <Route path="leaderboard" element={<LeaderboardPage />} />
+              <Route path="battleground" element={<BattlegroundPage />} />
+              <Route path="impact" element={<ImpactGabonPage />} />
+              <Route path="mentorship" element={<MentorshipPage />} />
+              <Route path="commando" element={<CommandoRecruitmentPage />} />
+              <Route path="settings" element={<SettingsPage user={user} />} />
+              <Route path="admin/users" element={isAdmin(user) ? <AdminUsersPage /> : <Navigate to="/app" />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

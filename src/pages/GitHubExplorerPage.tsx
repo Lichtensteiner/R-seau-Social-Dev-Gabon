@@ -64,15 +64,15 @@ export default function GitHubExplorerPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+    <div className="max-w-4xl mx-auto space-y-8 transition-colors duration-300">
+      <div className="bg-white dark:bg-dark-surface p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-slate-900 text-white rounded-xl">
+          <div className="p-3 bg-slate-900 dark:bg-dark-bg text-white rounded-xl border dark:border-dark-border">
             <Github size={32} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Explorateur GitHub</h1>
-            <p className="text-slate-500">Recherchez n'importe quel développeur pour voir ses projets publics.</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Explorateur GitHub</h1>
+            <p className="text-slate-500 dark:text-slate-400">Recherchez n'importe quel développeur pour voir ses projets publics.</p>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export default function GitHubExplorerPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Entrez un nom d'utilisateur GitHub..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
             />
           </div>
           <button
@@ -116,37 +116,37 @@ export default function GitHubExplorerPage() {
             className="space-y-6"
           >
             {/* User Profile Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <div className="bg-white dark:bg-dark-surface p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border flex flex-col md:flex-row gap-6 items-center md:items-start">
               <img 
                 src={user.avatar_url} 
                 alt={user.login} 
-                className="w-24 h-24 rounded-2xl border-4 border-slate-50 shadow-sm"
+                className="w-24 h-24 rounded-2xl border-4 border-slate-50 dark:border-dark-bg shadow-sm"
               />
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold text-slate-900">{user.name || user.login}</h2>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user.name || user.login}</h2>
                   <a 
                     href={user.html_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-indigo-600 hover:underline text-sm font-medium flex items-center justify-center md:justify-start gap-1"
+                    className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-medium flex items-center justify-center md:justify-start gap-1"
                   >
                     @{user.login} <ExternalLink size={14} />
                   </a>
                 </div>
-                <p className="text-slate-600 mb-4 max-w-2xl">{user.bio || "Pas de biographie disponible."}</p>
-                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-slate-500">
+                <p className="text-slate-600 dark:text-slate-300 mb-4 max-w-2xl">{user.bio || "Pas de biographie disponible."}</p>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <BookOpen size={16} className="text-indigo-500" />
-                    <span className="text-slate-900">{user.public_repos}</span> dépôts
+                    <span className="text-slate-900 dark:text-white">{user.public_repos}</span> dépôts
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Star size={16} className="text-yellow-500" />
-                    <span className="text-slate-900">{user.followers}</span> abonnés
+                    <span className="text-slate-900 dark:text-white">{user.followers}</span> abonnés
                   </div>
                   <div className="flex items-center gap-1.5">
                     <GitBranch size={16} className="text-purple-500" />
-                    <span className="text-slate-900">{user.following}</span> abonnements
+                    <span className="text-slate-900 dark:text-white">{user.following}</span> abonnements
                   </div>
                 </div>
               </div>
@@ -155,51 +155,51 @@ export default function GitHubExplorerPage() {
             {/* Repositories Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {repos.map((repo, index) => (
-                <motion.a
-                  key={repo.id}
-                  href={repo.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.02 }}
-                  className="group bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate pr-4">
-                        {repo.name}
-                      </h3>
-                      <ExternalLink size={16} className="text-slate-300 group-hover:text-indigo-400" />
-                    </div>
-                    <p className="text-sm text-slate-600 line-clamp-2 mb-4 h-10">
-                      {repo.description || "Aucune description fournie pour ce projet."}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
-                      {repo.language && (
-                        <div className="flex items-center gap-1.5">
-                          <Code2 size={14} className="text-indigo-500" />
-                          {repo.language}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1.5">
-                        <Star size={14} className="text-yellow-500" />
-                        {repo.stargazers_count}
+                  <motion.a
+                    key={repo.id}
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className="group bg-white dark:bg-dark-surface p-5 rounded-2xl border border-slate-200 dark:border-dark-border hover:border-indigo-400 dark:hover:border-indigo-900/50 hover:shadow-md transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate pr-4">
+                          {repo.name}
+                        </h3>
+                        <ExternalLink size={16} className="text-slate-300 dark:text-slate-700 group-hover:text-indigo-400" />
                       </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4 h-10">
+                        {repo.description || "Aucune description fournie pour ce projet."}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      Mis à jour le {new Date(repo.updated_at).toLocaleDateString('fr-FR')}
-                    </span>
-                  </div>
-                </motion.a>
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50 dark:border-dark-border">
+                      <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {repo.language && (
+                          <div className="flex items-center gap-1.5">
+                            <Code2 size={14} className="text-indigo-500" />
+                            {repo.language}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <Star size={14} className="text-yellow-500" />
+                          {repo.stargazers_count}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                        Mis à jour le {new Date(repo.updated_at).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  </motion.a>
               ))}
             </div>
 
             {repos.length === 0 && !loading && (
-              <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-                <p className="text-slate-500">Aucun dépôt public trouvé pour cet utilisateur.</p>
+              <div className="text-center py-12 bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-dark-border">
+                <p className="text-slate-500 dark:text-slate-400">Aucun dépôt public trouvé pour cet utilisateur.</p>
               </div>
             )}
           </motion.div>

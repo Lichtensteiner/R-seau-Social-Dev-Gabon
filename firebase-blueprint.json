@@ -71,7 +71,8 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Account creation timestamp." },
         "lastLoginAt": { "type": "string", "format": "date-time", "description": "Last login timestamp." },
         "followers": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs following this user." },
-        "following": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs this user is following." }
+        "following": { "type": "array", "items": { "type": "string" }, "description": "List of UIDs this user is following." },
+        "theme": { "type": "string", "enum": ["light", "dark"], "description": "User's preferred theme." }
       },
       "required": ["uid", "displayName", "email", "role", "createdAt"]
     },
@@ -153,6 +154,117 @@
         "timestamp": { "type": "string", "format": "date-time", "description": "When the activity occurred." }
       },
       "required": ["userId", "type", "timestamp"]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "A user's standing in the elite ranking.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user." },
+        "displayName": { "type": "string", "description": "Name of the user." },
+        "photoURL": { "type": "string", "description": "Photo URL of the user." },
+        "points": { "type": "number", "description": "Total points accumulated." },
+        "rank": { "type": "number", "description": "Current rank." },
+        "badges": { "type": "array", "items": { "type": "string" }, "description": "List of earned prestige badges." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp." }
+      },
+      "required": ["userId", "points", "updatedAt"]
+    },
+    "Challenge": {
+      "title": "Challenge",
+      "description": "A coding challenge in the Battleground.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the challenge." },
+        "description": { "type": "string", "description": "Detailed description." },
+        "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard", "Elite"], "description": "Difficulty level." },
+        "points": { "type": "number", "description": "Points awarded for completion." },
+        "type": { "type": "string", "enum": ["Flash", "Duel", "Hackathon"], "description": "Type of challenge." },
+        "status": { "type": "string", "enum": ["Active", "Closed", "Upcoming"], "description": "Current status." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["title", "description", "difficulty", "points", "type", "status", "createdAt"]
+    },
+    "ChallengeSubmission": {
+      "title": "ChallengeSubmission",
+      "description": "A user's submission for a challenge.",
+      "type": "object",
+      "properties": {
+        "challengeId": { "type": "string", "description": "ID of the challenge." },
+        "userId": { "type": "string", "description": "UID of the user." },
+        "code": { "type": "string", "description": "Submitted code or link." },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"], "description": "Submission status." },
+        "score": { "type": "number", "description": "Score awarded." },
+        "submittedAt": { "type": "string", "format": "date-time", "description": "Submission timestamp." }
+      },
+      "required": ["challengeId", "userId", "code", "status", "submittedAt"]
+    },
+    "ImpactProject": {
+      "title": "ImpactProject",
+      "description": "A project with real impact in Gabon.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Project title." },
+        "description": { "type": "string", "description": "Project description." },
+        "authorId": { "type": "string", "description": "UID of the creator." },
+        "impactScore": { "type": "number", "description": "Calculated impact index." },
+        "status": { "type": "string", "enum": ["Draft", "Published", "Featured"], "description": "Publication status." },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Relevant tags." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["title", "description", "authorId", "impactScore", "status", "createdAt"]
+    },
+    "Mentorship": {
+      "title": "Mentorship",
+      "description": "A mentorship relationship.",
+      "type": "object",
+      "properties": {
+        "mentorId": { "type": "string", "description": "UID of the mentor." },
+        "menteeId": { "type": "string", "description": "UID of the mentee." },
+        "status": { "type": "string", "enum": ["Pending", "Active", "Completed", "Cancelled"], "description": "Relationship status." },
+        "startDate": { "type": "string", "format": "date-time", "description": "When it started." },
+        "endDate": { "type": "string", "format": "date-time", "description": "When it ended." }
+      },
+      "required": ["mentorId", "menteeId", "status", "startDate"]
+    },
+    "Certification": {
+      "title": "Certification",
+      "description": "An internal certification earned by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user." },
+        "title": { "type": "string", "description": "Title of the certification." },
+        "issuerId": { "type": "string", "description": "UID of the issuer (usually an admin or mentor)." },
+        "date": { "type": "string", "format": "date-time", "description": "Date issued." }
+      },
+      "required": ["userId", "title", "issuerId", "date"]
+    },
+    "TechnicalTest": {
+      "title": "TechnicalTest",
+      "description": "A technical test for Commando Recruitment.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Test title." },
+        "description": { "type": "string", "description": "Test description." },
+        "duration": { "type": "number", "description": "Duration in minutes." },
+        "difficulty": { "type": "string", "enum": ["Junior", "Intermediate", "Senior", "Expert"], "description": "Difficulty level." },
+        "questions": { "type": "array", "items": { "type": "object" }, "description": "List of questions." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["title", "description", "duration", "difficulty", "createdAt"]
+    },
+    "TestResult": {
+      "title": "TestResult",
+      "description": "Result of a technical test.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user." },
+        "testId": { "type": "string", "description": "ID of the test." },
+        "score": { "type": "number", "description": "Score achieved." },
+        "status": { "type": "string", "enum": ["Passed", "Failed", "In-Progress"], "description": "Result status." },
+        "completedAt": { "type": "string", "format": "date-time", "description": "Completion timestamp." }
+      },
+      "required": ["userId", "testId", "score", "status", "completedAt"]
     }
   },
   "firestore": {
@@ -187,6 +299,38 @@
     "/activities/{activityId}": {
       "schema": { "$ref": "#/entities/Activity" },
       "description": "Collection of system activities."
+    },
+    "/leaderboard/{userId}": {
+      "schema": { "$ref": "#/entities/LeaderboardEntry" },
+      "description": "Elite ranking leaderboard."
+    },
+    "/challenges/{challengeId}": {
+      "schema": { "$ref": "#/entities/Challenge" },
+      "description": "Battleground coding challenges."
+    },
+    "/challenges/{challengeId}/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/ChallengeSubmission" },
+      "description": "Submissions for challenges."
+    },
+    "/impact_projects/{projectId}": {
+      "schema": { "$ref": "#/entities/ImpactProject" },
+      "description": "Projects with real impact in Gabon."
+    },
+    "/mentorships/{mentorshipId}": {
+      "schema": { "$ref": "#/entities/Mentorship" },
+      "description": "Mentorship relationships."
+    },
+    "/certifications/{certId}": {
+      "schema": { "$ref": "#/entities/Certification" },
+      "description": "Internal certifications."
+    },
+    "/technical_tests/{testId}": {
+      "schema": { "$ref": "#/entities/TechnicalTest" },
+      "description": "Commando recruitment tests."
+    },
+    "/test_results/{resultId}": {
+      "schema": { "$ref": "#/entities/TestResult" },
+      "description": "Results of technical tests."
     }
   }
 }

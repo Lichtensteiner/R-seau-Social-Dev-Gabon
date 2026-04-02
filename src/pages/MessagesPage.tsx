@@ -212,14 +212,14 @@ export default function MessagesPage({ user }: { user: User }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex h-[calc(100vh-8rem)]">
+    <div className="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden flex h-[calc(100vh-8rem)] transition-colors duration-300">
       {/* Sidebar - Chat List */}
-      <div className={`w-full md:w-80 border-r border-slate-200 flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-          <h2 className="font-bold text-lg text-slate-900">Messages</h2>
+      <div className={`w-full md:w-80 border-r border-slate-200 dark:border-dark-border flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 border-b border-slate-200 dark:border-dark-border flex justify-between items-center">
+          <h2 className="font-bold text-lg text-slate-900 dark:text-white">Messages</h2>
           <button 
             onClick={() => setShowNewChat(true)}
-            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+            className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full transition-colors"
           >
             <MessageCircle size={20} />
           </button>
@@ -227,11 +227,11 @@ export default function MessagesPage({ user }: { user: User }) {
 
         <div className="flex-1 overflow-y-auto">
           {chats.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
               <p>Aucun message pour le moment.</p>
               <button 
                 onClick={() => setShowNewChat(true)}
-                className="mt-4 text-indigo-600 font-medium hover:underline"
+                className="mt-4 text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
               >
                 Démarrer une conversation
               </button>
@@ -241,23 +241,23 @@ export default function MessagesPage({ user }: { user: User }) {
               <button
                 key={chat.id}
                 onClick={() => setSelectedChat(chat)}
-                className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 ${selectedChat?.id === chat.id ? 'bg-indigo-50/50' : ''}`}
+                className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors text-left border-b border-slate-100 dark:border-dark-border ${selectedChat?.id === chat.id ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}
               >
                 <img 
                   src={chat.otherUser?.photoURL || `https://ui-avatars.com/api/?name=${chat.otherUser?.displayName}&background=random`} 
                   alt={chat.otherUser?.displayName}
-                  className="w-12 h-12 rounded-full bg-slate-200 object-cover shrink-0"
+                  className="w-12 h-12 rounded-full bg-slate-200 dark:bg-dark-bg object-cover shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-semibold text-slate-900 truncate">{chat.otherUser?.displayName}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white truncate">{chat.otherUser?.displayName}</h3>
                     {chat.updatedAt && (
-                      <span className="text-xs text-slate-400 shrink-0">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                         {formatDistanceToNow(chat.updatedAt?.toDate ? chat.updatedAt.toDate() : new Date(), { addSuffix: true, locale: fr })}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-500 truncate">{chat.lastMessage || 'Nouvelle conversation'}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{chat.lastMessage || 'Nouvelle conversation'}</p>
                 </div>
               </button>
             ))
@@ -270,33 +270,33 @@ export default function MessagesPage({ user }: { user: User }) {
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-200 flex items-center gap-3 bg-white">
+            <div className="p-4 border-b border-slate-200 dark:border-dark-border flex items-center gap-3 bg-white dark:bg-dark-surface">
               <button 
                 onClick={() => setSelectedChat(null)}
-                className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full"
+                className="md:hidden p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-bg rounded-full"
               >
                 <ArrowLeft size={20} />
               </button>
               <img 
                 src={selectedChat.otherUser?.photoURL || `https://ui-avatars.com/api/?name=${selectedChat.otherUser?.displayName}&background=random`} 
                 alt={selectedChat.otherUser?.displayName}
-                className="w-10 h-10 rounded-full bg-slate-200 object-cover"
+                className="w-10 h-10 rounded-full bg-slate-200 dark:bg-dark-bg object-cover"
               />
               <div>
-                <h3 className="font-semibold text-slate-900">{selectedChat.otherUser?.displayName}</h3>
-                <p className="text-xs text-slate-500 capitalize">{selectedChat.otherUser?.role}</p>
+                <h3 className="font-semibold text-slate-900 dark:text-white">{selectedChat.otherUser?.displayName}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{selectedChat.otherUser?.role}</p>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-dark-bg">
               {messages.map(msg => {
                 const isMe = msg.senderId === user.uid;
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2 ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-900 rounded-tl-none'}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-2 ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-900 dark:text-white rounded-tl-none'}`}>
                       <p className="text-sm">{msg.text}</p>
-                      <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
+                      <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
                         {msg.createdAt ? formatDistanceToNow(msg.createdAt?.toDate ? msg.createdAt.toDate() : new Date(), { addSuffix: true, locale: fr }) : 'à l\'instant'}
                       </p>
                     </div>
@@ -307,14 +307,14 @@ export default function MessagesPage({ user }: { user: User }) {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-slate-200">
+            <div className="p-4 bg-white dark:bg-dark-surface border-t border-slate-200 dark:border-dark-border">
               <form onSubmit={sendMessage} className="flex gap-2">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Écrire un message..."
-                  className="flex-1 bg-slate-100 border-transparent rounded-full px-4 py-2 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="flex-1 bg-slate-100 dark:bg-dark-bg border-transparent dark:border-dark-border rounded-full px-4 py-2 text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-dark-surface focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                 />
                 <button
                   type="submit"
@@ -327,7 +327,7 @@ export default function MessagesPage({ user }: { user: User }) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-dark-bg">
             <MessageCircle size={48} className="mb-4 opacity-20" />
             <p>Sélectionnez une conversation pour commencer à discuter</p>
           </div>
@@ -337,22 +337,22 @@ export default function MessagesPage({ user }: { user: User }) {
       {/* New Chat Modal */}
       {showNewChat && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-              <h2 className="font-bold text-lg">Nouvelle conversation</h2>
-              <button onClick={() => setShowNewChat(false)} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">
+          <div className="bg-white dark:bg-dark-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-slate-200 dark:border-dark-border flex justify-between items-center">
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Nouvelle conversation</h2>
+              <button onClick={() => setShowNewChat(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 text-2xl leading-none">
                 &times;
               </button>
             </div>
-            <div className="p-4 border-b border-slate-100">
+            <div className="p-4 border-b border-slate-100 dark:border-dark-border">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                 <input
                   type="text"
                   placeholder="Rechercher un utilisateur..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-dark-bg border-transparent dark:border-dark-border rounded-lg text-sm text-slate-900 dark:text-white focus:bg-white dark:focus:bg-dark-surface focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                 />
               </div>
             </div>
@@ -363,16 +363,16 @@ export default function MessagesPage({ user }: { user: User }) {
                   <button
                     key={u.uid}
                     onClick={() => startChat(u)}
-                    className="w-full p-2 flex items-center gap-3 hover:bg-slate-50 rounded-lg transition-colors text-left"
+                    className="w-full p-2 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-dark-bg rounded-lg transition-colors text-left"
                   >
                     <img 
                       src={u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName}&background=random`} 
                       alt={u.displayName}
-                      className="w-10 h-10 rounded-full bg-slate-200 object-cover shrink-0"
+                      className="w-10 h-10 rounded-full bg-slate-200 dark:bg-dark-bg object-cover shrink-0"
                     />
                     <div className="min-w-0">
-                      <h3 className="font-medium text-slate-900 truncate">{u.displayName}</h3>
-                      <p className="text-xs text-slate-500 capitalize">{u.role}</p>
+                      <h3 className="font-medium text-slate-900 dark:text-white truncate">{u.displayName}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{u.role}</p>
                     </div>
                   </button>
                 ))}

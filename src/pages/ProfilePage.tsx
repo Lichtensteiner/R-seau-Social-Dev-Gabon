@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User } from 'firebase/auth';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
-import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library, X, Users } from 'lucide-react';
+import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library, X, Users, Trophy, Medal } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { logActivity } from '../lib/activity';
 import { motion, AnimatePresence } from 'motion/react';
@@ -41,6 +41,11 @@ interface UserProfile {
   following?: string[];
 }
 
+interface LeaderboardData {
+  points: number;
+  badges: string[];
+}
+
 export default function ProfilePage({ user }: { user: User }) {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
@@ -48,6 +53,7 @@ export default function ProfilePage({ user }: { user: User }) {
   const isOwnProfile = targetUserId === user.uid;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -137,6 +143,15 @@ export default function ProfilePage({ user }: { user: User }) {
     };
 
     fetchProfile();
+
+    // Real-time leaderboard points
+    const unsubscribeLeaderboard = onSnapshot(doc(db, 'leaderboard', targetUserId), (snap) => {
+      if (snap.exists()) {
+        setLeaderboard(snap.data() as LeaderboardData);
+      }
+    });
+
+    return () => unsubscribeLeaderboard();
   }, [targetUserId]);
 
   useEffect(() => {
@@ -293,8 +308,8 @@ export default function ProfilePage({ user }: { user: User }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="max-w-4xl mx-auto space-y-6 transition-colors duration-300">
+      <div className="bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
         {/* Header Cover */}
         <div className="h-40 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
         
@@ -304,7 +319,7 @@ export default function ProfilePage({ user }: { user: User }) {
               <img 
                 src={formData.photoURL || profile.photoURL || `https://ui-avatars.com/api/?name=${profile.displayName || profile.email}&background=random&size=128`} 
                 alt="Avatar" 
-                className={`w-32 h-32 rounded-full border-4 border-white bg-slate-200 object-cover shadow-md ${uploadingImage ? 'opacity-50' : ''}`}
+                className={`w-32 h-32 rounded-full border-4 border-white dark:border-dark-surface bg-slate-200 dark:bg-dark-bg object-cover shadow-md ${uploadingImage ? 'opacity-50' : ''}`}
               />
               {uploadingImage && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -313,7 +328,7 @@ export default function ProfilePage({ user }: { user: User }) {
               )}
               {isEditing && (
                 <div 
-                  className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 text-white rounded-full border-2 border-white shadow-sm cursor-pointer hover:bg-indigo-700 transition-colors"
+                  className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 text-white rounded-full border-2 border-white dark:border-dark-surface shadow-sm cursor-pointer hover:bg-indigo-700 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Camera size={16} />
@@ -333,7 +348,7 @@ export default function ProfilePage({ user }: { user: User }) {
                 {isOwnProfile ? (
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-bg border border-slate-300 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-dark-surface transition-colors"
                   >
                     <Edit2 size={16} />
                     Modifier
@@ -344,7 +359,7 @@ export default function ProfilePage({ user }: { user: User }) {
                       onClick={handleFollowToggle}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         profile.followers?.includes(user.uid)
-                          ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          ? 'bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-dark-surface'
                           : 'bg-indigo-600 text-white hover:bg-indigo-700'
                       }`}
                     >
@@ -356,7 +371,7 @@ export default function ProfilePage({ user }: { user: User }) {
                     </button>
                     <button 
                       onClick={() => navigate(`/app/messages?userId=${targetUserId}`)}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-bg border border-slate-300 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-dark-surface transition-colors"
                     >
                       <MessageSquare size={16} />
                       Message
@@ -368,7 +383,7 @@ export default function ProfilePage({ user }: { user: User }) {
               <div className="flex gap-2">
                 <button 
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 bg-white dark:bg-dark-bg border border-slate-300 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-dark-surface transition-colors"
                 >
                   Annuler
                 </button>
@@ -387,75 +402,100 @@ export default function ProfilePage({ user }: { user: User }) {
           {!isEditing ? (
             <div className="space-y-8">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
                   {profile.displayName}
-                  {profile.pseudo && <span className="text-xl font-normal text-slate-500 ml-2">@{profile.pseudo}</span>}
+                  {profile.pseudo && <span className="text-xl font-normal text-slate-500 dark:text-slate-400 ml-2">@{profile.pseudo}</span>}
                 </h1>
-                <p className="text-slate-500 flex items-center gap-2 mt-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 capitalize">
+                <p className="text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 capitalize">
                     {profile.role === 'dev' ? 'Développeur' : profile.role === 'writer' ? 'Écrivain / Auteur' : profile.role === 'recruiter' ? 'Recruteur' : 'Admin'}
                   </span>
                   {profile.status && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-300">
                       {profile.status}
                     </span>
                   )}
                   {profile.experienceYears !== undefined && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-300">
                       {profile.experienceYears} an{profile.experienceYears > 1 ? 's' : ''} d'exp.
                     </span>
                   )}
                 </p>
-                <div className="flex items-center gap-4 mt-4 text-sm font-medium text-slate-600">
+                <div className="flex items-center gap-4 mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
                   <button 
                     onClick={openFollowersModal}
-                    className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                    className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   >
-                    <span className="text-slate-900 font-bold">{profile.followers?.length || 0}</span> abonnés
+                    <span className="text-slate-900 dark:text-white font-bold">{profile.followers?.length || 0}</span> abonnés
                   </button>
                   <button 
                     onClick={openFollowingModal}
-                    className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                    className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   >
-                    <span className="text-slate-900 font-bold">{profile.following?.length || 0}</span> abonnements
+                    <span className="text-slate-900 dark:text-white font-bold">{profile.following?.length || 0}</span> abonnements
                   </button>
                 </div>
               </div>
 
               {/* Stats Bento */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border flex flex-col items-center justify-center text-center">
+                  <Trophy size={24} className="text-yellow-500 mb-2" />
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{leaderboard?.points || 0}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">Points</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border flex flex-col items-center justify-center text-center">
                   <BookOpen size={24} className="text-indigo-500 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{userStats.articles}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Articles</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{userStats.articles}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">Articles</span>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border flex flex-col items-center justify-center text-center">
                   <Library size={24} className="text-amber-500 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{userStats.books}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Livres</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{userStats.books}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">Livres</span>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border flex flex-col items-center justify-center text-center">
                   <Code2 size={24} className="text-pink-500 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{profile.skills?.length || 0}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Compétences</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{profile.skills?.length || 0}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">Compétences</span>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
-                  <Github size={24} className="text-slate-700 mb-2" />
-                  <span className="text-2xl font-bold text-slate-900">{repos.length}</span>
-                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">Dépôts publics</span>
+                <div className="bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border flex flex-col items-center justify-center text-center">
+                  <Github size={24} className="text-slate-700 dark:text-slate-300 mb-2" />
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{repos.length}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mt-1">Dépôts</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              {/* Badges Section */}
+              {leaderboard?.badges && leaderboard.badges.length > 0 && (
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Medal size={18} className="text-amber-500" />
+                    Badges & Trophées
+                  </h2>
+                  <div className="flex flex-wrap gap-4">
+                    {leaderboard.badges.map((badge, index) => (
+                      <div key={index} className="flex flex-col items-center gap-1">
+                        <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                          <Trophy size={20} className="text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase text-center">{badge}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-dark-bg p-4 rounded-xl border border-slate-100 dark:border-dark-border">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <div className="p-2 bg-white dark:bg-dark-surface rounded-lg shadow-sm">
                     <Mail size={18} className="text-indigo-500" />
                   </div>
                   <span className="font-medium">{profile.email}</span>
                 </div>
                 {profile.location && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <div className="p-2 bg-white dark:bg-dark-surface rounded-lg shadow-sm">
                       <MapPin size={18} className="text-purple-500" />
                     </div>
                     <span className="font-medium">{profile.location}</span>
@@ -463,30 +503,30 @@ export default function ProfilePage({ user }: { user: User }) {
                 )}
                 {profile.githubUrl && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
-                      <Github size={18} className="text-slate-700" />
+                    <div className="p-2 bg-white dark:bg-dark-surface rounded-lg shadow-sm">
+                      <Github size={18} className="text-slate-700 dark:text-slate-300" />
                     </div>
-                    <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 hover:underline">
+                    <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
                       GitHub
                     </a>
                   </div>
                 )}
                 {profile.linkedInUrl && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <div className="p-2 bg-white dark:bg-dark-surface rounded-lg shadow-sm">
                       <Linkedin size={18} className="text-blue-600" />
                     </div>
-                    <a href={profile.linkedInUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 hover:underline">
+                    <a href={profile.linkedInUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
                       LinkedIn
                     </a>
                   </div>
                 )}
                 {profile.portfolioUrl && (
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <div className="p-2 bg-white dark:bg-dark-surface rounded-lg shadow-sm">
                       <Globe size={18} className="text-emerald-500" />
                     </div>
-                    <a href={profile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 hover:underline">
+                    <a href={profile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
                       Portfolio
                     </a>
                   </div>
@@ -494,24 +534,24 @@ export default function ProfilePage({ user }: { user: User }) {
               </div>
 
               {profile.bio && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                     <UserIcon size={18} className="text-indigo-500" />
                     À propos
                   </h2>
-                  <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
                 </div>
               )}
 
               {profile.skills && profile.skills.length > 0 && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Code2 size={18} className="text-purple-500" />
                     Compétences techniques
                   </h2>
                   <div className="flex flex-wrap gap-2">
                     {profile.skills.map(skill => (
-                      <span key={skill} className="px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-xl border border-indigo-100">
+                      <span key={skill} className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-sm font-semibold rounded-xl border border-indigo-100 dark:border-indigo-900/30">
                         {skill}
                       </span>
                     ))}
@@ -521,17 +561,17 @@ export default function ProfilePage({ user }: { user: User }) {
 
               {/* Articles Section */}
               {userArticles.length > 0 && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                     <BookOpen size={18} className="text-indigo-500" />
                     Articles publiés
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {userArticles.map(article => (
-                      <div key={article.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
-                        <h3 className="font-bold text-slate-900 line-clamp-1">{article.title}</h3>
-                        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{article.summary}</p>
-                        <div className="flex items-center gap-3 mt-3 text-xs text-slate-400 font-medium">
+                      <div key={article.id} className="p-4 rounded-xl border border-slate-100 dark:border-dark-border bg-slate-50 dark:bg-dark-bg hover:bg-white dark:hover:bg-dark-surface hover:shadow-md transition-all">
+                        <h3 className="font-bold text-slate-900 dark:text-white line-clamp-1">{article.title}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{article.summary}</p>
+                        <div className="flex items-center gap-3 mt-3 text-xs text-slate-400 dark:text-slate-500 font-medium">
                           <span className="flex items-center gap-1"><Heart size={12} /> {article.likes?.length || 0}</span>
                           <span>{formatDate(article.createdAt, 'dd/MM/yyyy')}</span>
                         </div>
@@ -543,21 +583,21 @@ export default function ProfilePage({ user }: { user: User }) {
 
               {/* Books Section */}
               {userBooks.length > 0 && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Library size={18} className="text-amber-500" />
                     Bibliothèque
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {userBooks.map(book => (
-                      <div key={book.id} className="flex gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
+                      <div key={book.id} className="flex gap-4 p-4 rounded-xl border border-slate-100 dark:border-dark-border bg-slate-50 dark:bg-dark-bg hover:bg-white dark:hover:bg-dark-surface hover:shadow-md transition-all">
                         {book.coverImage && (
                           <img src={book.coverImage} alt={book.title} className="w-16 h-24 object-cover rounded shadow-sm" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-slate-900 truncate">{book.title}</h3>
-                          <p className="text-xs text-slate-500 mt-1">{book.genre}</p>
-                          <p className="text-xs text-slate-600 mt-2 line-clamp-2">{book.description}</p>
+                          <h3 className="font-bold text-slate-900 dark:text-white truncate">{book.title}</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{book.genre}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">{book.description}</p>
                         </div>
                       </div>
                     ))}
@@ -567,15 +607,15 @@ export default function ProfilePage({ user }: { user: User }) {
 
               {/* GitHub Repositories */}
               {profile.githubUrl && (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div className="bg-white dark:bg-dark-surface p-6 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                      <Github size={18} className="text-slate-700" />
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                      <Github size={18} className="text-slate-700 dark:text-slate-300" />
                       {showAllRepos ? 'Tous les projets GitHub' : 'Derniers projets GitHub'}
                     </h2>
                     <button 
                       onClick={() => setShowAllRepos(!showAllRepos)}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider transition-colors"
+                      className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 uppercase tracking-wider transition-colors"
                     >
                       {showAllRepos ? 'Réduire' : 'Voir tout'}
                     </button>
@@ -583,7 +623,7 @@ export default function ProfilePage({ user }: { user: User }) {
                   
                   {loadingRepos ? (
                     <div className="flex justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
                     </div>
                   ) : repos.length > 0 ? (
                     <div className="space-y-4">
@@ -594,13 +634,13 @@ export default function ProfilePage({ user }: { user: User }) {
                             href={repo.html_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="group block p-5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all bg-white"
+                            className="group block p-5 rounded-xl border border-slate-200 dark:border-dark-border hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all bg-white dark:bg-dark-bg"
                           >
-                            <h3 className="font-bold text-indigo-600 truncate group-hover:text-indigo-700 transition-colors">{repo.name}</h3>
-                            <p className="text-sm text-slate-600 mt-2 line-clamp-2 min-h-[40px] leading-relaxed">
+                            <h3 className="font-bold text-indigo-600 dark:text-indigo-400 truncate group-hover:text-indigo-700 transition-colors">{repo.name}</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 min-h-[40px] leading-relaxed">
                               {repo.description || "Aucune description"}
                             </p>
-                            <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 font-semibold">
+                            <div className="flex items-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-500 font-semibold">
                               {repo.language && (
                                 <span className="flex items-center gap-1.5">
                                   <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
@@ -611,7 +651,7 @@ export default function ProfilePage({ user }: { user: User }) {
                                 <Star size={14} className="text-yellow-500" /> {repo.stargazers_count}
                               </span>
                               <span className="flex items-center gap-1.5">
-                                <GitBranch size={14} className="text-slate-400" /> {repo.forks_count}
+                                <GitBranch size={14} className="text-slate-400 dark:text-slate-600" /> {repo.forks_count}
                               </span>
                             </div>
                           </a>
@@ -621,7 +661,7 @@ export default function ProfilePage({ user }: { user: User }) {
                         <div className="text-center pt-2">
                           <button 
                             onClick={() => setShowAllRepos(true)}
-                            className="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+                            className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                           >
                             Afficher plus de dépôts...
                           </button>
@@ -629,8 +669,8 @@ export default function ProfilePage({ user }: { user: User }) {
                       )}
                     </div>
                   ) : (
-                    <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100">
-                      <p className="text-sm text-slate-500 font-medium">Aucun dépôt public trouvé.</p>
+                    <div className="text-center py-8 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Aucun dépôt public trouvé.</p>
                     </div>
                   )}
                 </div>
@@ -640,62 +680,62 @@ export default function ProfilePage({ user }: { user: User }) {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nom d'affichage *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom d'affichage *</label>
                   <input
                     type="text"
                     value={formData.displayName}
                     onChange={e => setFormData({...formData, displayName: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Pseudo</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pseudo</label>
                   <input
                     type="text"
                     value={formData.pseudo}
                     onChange={e => setFormData({...formData, pseudo: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="ex: dev_ninja"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Prénom</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prénom</label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={e => setFormData({...formData, firstName: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nom</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom</label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={e => setFormData({...formData, lastName: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Localisation</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Localisation</label>
                   <input
                     type="text"
                     value={formData.location}
                     onChange={e => setFormData({...formData, location: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Libreville, Gabon"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Statut</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Statut</label>
                   <select
                     value={formData.status}
                     onChange={e => setFormData({...formData, status: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="">Sélectionner...</option>
                     <option value="Étudiant">Étudiant</option>
@@ -706,68 +746,68 @@ export default function ProfilePage({ user }: { user: User }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Années d'expérience</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Années d'expérience</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.experienceYears}
                     onChange={e => setFormData({...formData, experienceYears: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Lien GitHub</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Lien GitHub</label>
                   <input
                     type="url"
                     value={formData.githubUrl}
                     onChange={e => setFormData({...formData, githubUrl: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="https://github.com/..."
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Lien LinkedIn</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Lien LinkedIn</label>
                   <input
                     type="url"
                     value={formData.linkedInUrl}
                     onChange={e => setFormData({...formData, linkedInUrl: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="https://linkedin.com/in/..."
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Portfolio</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Portfolio</label>
                   <input
                     type="url"
                     value={formData.portfolioUrl}
                     onChange={e => setFormData({...formData, portfolioUrl: e.target.value})}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="https://mon-portfolio.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Biographie</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Biographie</label>
                 <textarea
                   rows={4}
                   value={formData.bio}
                   onChange={e => setFormData({...formData, bio: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Parlez-nous de vous..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Compétences (séparées par des virgules)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Compétences (séparées par des virgules)</label>
                 <input
                   type="text"
                   value={formData.skills}
                   onChange={e => setFormData({...formData, skills: e.target.value})}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full rounded-md border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-900 dark:text-white px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="React, Node.js, Python, DevOps..."
                 />
               </div>
@@ -784,15 +824,15 @@ export default function ProfilePage({ user }: { user: User }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+              className="bg-white dark:bg-dark-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-dark-border"
             >
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-slate-900">
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   {showFollowersModal ? 'Abonnés' : 'Abonnements'}
                 </h3>
                 <button 
                   onClick={() => { setShowFollowersModal(false); setShowFollowingModal(false); }} 
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-dark-bg rounded-full transition-colors text-slate-500 dark:text-slate-400"
                 >
                   <X size={20} />
                 </button>
@@ -800,10 +840,10 @@ export default function ProfilePage({ user }: { user: User }) {
               <div className="p-4 max-h-[400px] overflow-y-auto">
                 {loadingFollowList ? (
                   <div className="flex justify-center py-8">
-                    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-spin" />
                   </div>
                 ) : followListData.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 italic">
+                  <div className="text-center py-8 text-slate-500 dark:text-slate-400 italic">
                     Aucun utilisateur trouvé
                   </div>
                 ) : (
@@ -811,7 +851,7 @@ export default function ProfilePage({ user }: { user: User }) {
                     {followListData.map((userItem) => (
                       <div 
                         key={userItem.uid} 
-                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-bg transition-colors cursor-pointer"
                         onClick={() => {
                           navigate(`/app/profile/${userItem.uid}`);
                           setShowFollowersModal(false);
@@ -822,14 +862,14 @@ export default function ProfilePage({ user }: { user: User }) {
                           <img 
                             src={userItem.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.displayName)}&background=random`} 
                             alt={userItem.displayName}
-                            className="w-10 h-10 rounded-full object-cover border border-slate-100"
+                            className="w-10 h-10 rounded-full object-cover border border-slate-100 dark:border-dark-border"
                           />
                           <div>
-                            <div className="font-bold text-slate-900">{userItem.displayName}</div>
-                            <div className="text-xs text-slate-500 capitalize">{userItem.role}</div>
+                            <div className="font-bold text-slate-900 dark:text-white">{userItem.displayName}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 capitalize">{userItem.role}</div>
                           </div>
                         </div>
-                        <ChevronRight size={18} className="text-slate-400" />
+                        <ChevronRight size={18} className="text-slate-400 dark:text-slate-600" />
                       </div>
                     ))}
                   </div>

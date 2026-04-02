@@ -1,5 +1,42 @@
 @import "tailwindcss";
 
+@theme {
+  --color-dark-bg: #050505;
+  --color-dark-surface: #0a0a0a;
+  --color-dark-border: #1a1a1a;
+  --color-dark-text: #f8fafc;
+  --color-dark-muted: #94a3b8;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html.dark {
+    background-color: var(--color-dark-bg);
+    color: var(--color-dark-text);
+  }
+
+  body {
+    @apply transition-colors duration-300;
+  }
+
+  .dark body {
+    background-color: var(--color-dark-bg);
+    color: var(--color-dark-text);
+  }
+
+  /* Custom scrollbar for dark mode */
+  .dark ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+}
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;

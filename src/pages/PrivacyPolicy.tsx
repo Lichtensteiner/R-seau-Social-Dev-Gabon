@@ -4,9 +4,9 @@ import { Shield, ArrowLeft, Lock, Eye, Database, UserCheck } from 'lucide-react'
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-8 border-b border-slate-100 bg-indigo-600 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-dark-surface rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border overflow-hidden">
+        <div className="p-8 border-b border-slate-100 dark:border-dark-border bg-indigo-600 text-white">
           <Link to="/" className="inline-flex items-center gap-2 text-indigo-100 hover:text-white mb-6 transition-colors">
             <ArrowLeft size={20} />
             Retour à l'accueil
@@ -22,50 +22,50 @@ export default function PrivacyPolicy() {
           </div>
         </div>
 
-        <div className="p-8 prose prose-slate max-w-none">
+        <div className="p-8 prose prose-slate dark:prose-invert max-w-none">
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <Lock className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <Lock className="text-indigo-600 dark:text-indigo-400" size={24} />
               1. Cadre Légal Gabonais
             </h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               DevGabon s'engage à protéger la vie privée de ses utilisateurs conformément à la législation gabonaise en vigueur, notamment :
             </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
+            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400 space-y-2">
               <li><strong>Loi n°001/2011</strong> relative à la protection des données à caractère personnel.</li>
               <li><strong>Loi n°019/2016</strong> relative à la communication audiovisuelle et numérique au Gabon.</li>
             </ul>
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <Database className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <Database className="text-indigo-600 dark:text-indigo-400" size={24} />
               2. Collecte des Données
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
               Nous collectons les informations suivantes pour assurer le bon fonctionnement du réseau :
             </p>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <h4 className="font-bold text-slate-900 mb-2">Informations de Profil</h4>
-                <p className="text-sm text-slate-600">Nom, prénom, email, photo de profil, biographie et liens sociaux.</p>
+              <div className="p-4 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border">
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Informations de Profil</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Nom, prénom, email, photo de profil, biographie et liens sociaux.</p>
               </div>
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <h4 className="font-bold text-slate-900 mb-2">Données Techniques</h4>
-                <p className="text-sm text-slate-600">Adresse IP, type de navigateur et logs d'activité pour la sécurité.</p>
+              <div className="p-4 bg-slate-50 dark:bg-dark-bg rounded-xl border border-slate-100 dark:border-dark-border">
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Données Techniques</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Adresse IP, type de navigateur et logs d'activité pour la sécurité.</p>
               </div>
             </div>
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <Eye className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <Eye className="text-indigo-600 dark:text-indigo-400" size={24} />
               3. Utilisation des Données
             </h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               Vos données sont utilisées exclusivement pour :
             </p>
-            <ul className="list-disc pl-6 text-slate-600 space-y-2">
+            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400 space-y-2">
               <li>Personnaliser votre expérience sur la plateforme.</li>
               <li>Faciliter la mise en relation entre professionnels (développeurs, écrivains, recruteurs).</li>
               <li>Assurer la sécurité et la modération des contenus.</li>
@@ -74,30 +74,30 @@ export default function PrivacyPolicy() {
           </section>
 
           <section className="mb-10">
-            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 mb-4">
-              <UserCheck className="text-indigo-600" size={24} />
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              <UserCheck className="text-indigo-600 dark:text-indigo-400" size={24} />
               4. Vos Droits
             </h2>
-            <p className="text-slate-600 leading-relaxed mb-4">
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
               Conformément à la Loi n°001/2011, vous disposez d'un droit d'accès, de rectification, d'opposition et de suppression de vos données.
             </p>
-            <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-              <p className="text-indigo-900 font-medium mb-2">Comment exercer vos droits ?</p>
-              <p className="text-indigo-700 text-sm">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+              <p className="text-indigo-900 dark:text-indigo-300 font-medium mb-2">Comment exercer vos droits ?</p>
+              <p className="text-indigo-700 dark:text-indigo-400 text-sm">
                 Vous pouvez modifier vos informations directement dans vos paramètres de profil ou nous contacter à l'adresse : <strong>ludo.consulting3@gmail.com</strong>.
               </p>
             </div>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">5. Sécurité des Données</h2>
-            <p className="text-slate-600 leading-relaxed">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">5. Sécurité des Données</h2>
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles rigoureuses pour protéger vos données contre tout accès non autorisé, altération ou destruction.
             </p>
           </section>
 
-          <div className="pt-8 border-t border-slate-100 text-center">
-            <p className="text-slate-500 text-sm">
+          <div className="pt-8 border-t border-slate-100 dark:border-dark-border text-center">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               © 2026 DevGabon - Protection des données certifiée conforme aux lois gabonaises.
             </p>
           </div>
