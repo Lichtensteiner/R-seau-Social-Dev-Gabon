@@ -143,6 +143,17 @@ export default function Layout({ user }: { user: User }) {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Install Button Mobile */}
+          {isInstallable && (
+            <button 
+              onClick={handleInstallClick}
+              className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 rounded-lg transition-colors"
+              title="Install App"
+            >
+              <Download size={20} className="animate-bounce" />
+            </button>
+          )}
+
           {/* Theme Toggle Mobile */}
           <button 
             onClick={toggleTheme}

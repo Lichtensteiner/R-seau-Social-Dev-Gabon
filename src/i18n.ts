@@ -61,7 +61,7 @@ const resources = {
         "settings": "Paramètres",
         "presentation": "Présentation",
         "admin": "Administration",
-        "install": "Installer l'application",
+        "install": "Install App",
         "logout": "Déconnexion"
       },
       "feed": {
