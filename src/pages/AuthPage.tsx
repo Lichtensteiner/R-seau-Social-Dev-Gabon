@@ -146,7 +146,7 @@ export default function AuthPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-slate-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-md py-2 border"
-                      placeholder="Jean Dupont"
+                      placeholder="Ludovic Dev"
                     />
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-slate-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-md py-2 border"
-                  placeholder="vous@exemple.com"
+                  placeholder="ludo.consulting3@gmail.com"
                 />
               </div>
             </div>
