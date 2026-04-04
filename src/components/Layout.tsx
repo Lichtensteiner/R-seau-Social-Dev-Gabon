@@ -130,7 +130,7 @@ export default function Layout({ user }: { user: User }) {
       {/* Mobile Header */}
       <div className="md:hidden bg-white dark:bg-dark-surface border-b border-slate-200 dark:border-dark-border p-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-8 h-8 object-contain" />
+          <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-8 h-8 rounded-lg object-cover" />
           <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">DevGabon</div>
         </div>
         
@@ -178,7 +178,7 @@ export default function Layout({ user }: { user: User }) {
           <div className="p-6 hidden md:block">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-10 h-10 object-contain" />
+                <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-10 h-10 rounded-lg object-cover" />
                 <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">DevGabon</div>
               </div>
               <div className="flex items-center gap-1">

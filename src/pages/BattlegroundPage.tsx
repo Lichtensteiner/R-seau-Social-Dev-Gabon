@@ -22,6 +22,13 @@ export default function BattlegroundPage() {
   const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
   const [solution, setSolution] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newDuel, setNewDuel] = useState({
+    title: '',
+    description: '',
+    difficulty: 'Medium' as Challenge['difficulty'],
+    points: 50
+  });
 
   useEffect(() => {
     const q = query(collection(db, 'challenges'), orderBy('createdAt', 'desc'));
@@ -74,6 +81,30 @@ export default function BattlegroundPage() {
     }
   };
 
+  const handleCreateDuel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser || !newDuel.title || !newDuel.description) return;
+    setSubmitting(true);
+
+    try {
+      await addDoc(collection(db, 'challenges'), {
+        ...newDuel,
+        type: 'Duel',
+        status: 'Active',
+        createdAt: serverTimestamp(),
+        authorId: auth.currentUser.uid,
+        authorName: auth.currentUser.displayName || 'Anonyme'
+      });
+
+      setIsCreateModalOpen(false);
+      setNewDuel({ title: '', description: '', difficulty: 'Medium', points: 50 });
+    } catch (error) {
+      console.error("Error creating duel:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-emerald-100 text-emerald-700';
@@ -98,10 +129,13 @@ export default function BattlegroundPage() {
         </div>
         
         <div className="flex gap-4">
-          <div className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 dark:shadow-none flex items-center gap-2 hover:bg-indigo-700 transition-all cursor-pointer">
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 dark:shadow-none flex items-center gap-2 hover:bg-indigo-700 transition-all active:scale-95"
+          >
             <Zap size={20} />
             Lancer un Duel
-          </div>
+          </button>
         </div>
       </div>
 
@@ -179,6 +213,94 @@ export default function BattlegroundPage() {
           )}
         </div>
       )}
+
+      {/* Create Duel Modal */}
+      <AnimatePresence>
+        {isCreateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-dark-surface w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-dark-border"
+            >
+              <form onSubmit={handleCreateDuel} className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+                    Lancer un Nouveau Duel
+                  </h2>
+                  <button 
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-dark-bg rounded-full transition-colors"
+                  >
+                    <X size={24} className="text-slate-400" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Titre du Duel</label>
+                    <input
+                      required
+                      type="text"
+                      value={newDuel.title}
+                      onChange={(e) => setNewDuel({ ...newDuel, title: e.target.value })}
+                      placeholder="Ex: Algorithme de tri rapide"
+                      className="w-full p-4 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Description / Énoncé</label>
+                    <textarea
+                      required
+                      value={newDuel.description}
+                      onChange={(e) => setNewDuel({ ...newDuel, description: e.target.value })}
+                      placeholder="Décrivez le problème à résoudre..."
+                      className="w-full h-32 p-4 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Difficulté</label>
+                      <select
+                        value={newDuel.difficulty}
+                        onChange={(e) => setNewDuel({ ...newDuel, difficulty: e.target.value as Challenge['difficulty'] })}
+                        className="w-full p-4 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white"
+                      >
+                        <option value="Easy">Facile</option>
+                        <option value="Medium">Moyen</option>
+                        <option value="Hard">Difficile</option>
+                        <option value="Elite">Élite</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Points</label>
+                      <input
+                        type="number"
+                        value={newDuel.points}
+                        onChange={(e) => setNewDuel({ ...newDuel, points: parseInt(e.target.value) })}
+                        className="w-full p-4 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full mt-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {submitting ? <Loader2 className="animate-spin" size={20} /> : <Sword size={20} />}
+                  {submitting ? 'Création...' : 'Créer le Duel'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Solve Modal */}
       <AnimatePresence>

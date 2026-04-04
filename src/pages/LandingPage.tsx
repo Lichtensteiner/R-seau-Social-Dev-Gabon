@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { 
@@ -40,6 +40,9 @@ export default function LandingPage({ user }: { user: User | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -47,26 +50,64 @@ export default function LandingPage({ user }: { user: User | null }) {
   }, []);
 
   useEffect(() => {
+    // Check if already installed
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    setIsStandalone(checkStandalone);
+
+    // Detect iOS
+    const detectIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(detectIOS);
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);
+      if (!checkStandalone) {
+        setShowInstallBanner(true);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      console.log('App was installed');
+      setIsStandalone(true);
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // If iOS and not standalone, show banner after a short delay
+    if (detectIOS && !checkStandalone) {
+      const timer = setTimeout(() => setShowInstallBanner(true), 3000);
+      return () => clearTimeout(timer);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (isIOS) {
+      alert("Pour installer l'application sur iOS : \n1. Appuyez sur le bouton 'Partager' (carré avec flèche) en bas de Safari \n2. Faites défiler vers le bas \n3. Appuyez sur 'Sur l'écran d'accueil'");
+      return;
+    }
+
+    if (!deferredPrompt) {
+      alert("Pour installer l'application : \n1. Ouvrez le menu de votre navigateur (⋮ ou ≡) \n2. Sélectionnez 'Installer l'application' ou 'Ajouter à l'écran d'accueil'");
+      return;
+    }
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     console.log(`User response to the install prompt: ${outcome}`);
-    setDeferredPrompt(null);
-    setIsInstallable(false);
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+      setShowInstallBanner(false);
+    }
   };
 
   const changeLanguage = (lng: string) => {
@@ -104,11 +145,47 @@ export default function LandingPage({ user }: { user: User | null }) {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30 selection:text-indigo-900 dark:selection:text-indigo-100">
+      {/* PWA Install Banner */}
+      <AnimatePresence>
+        {showInstallBanner && !isStandalone && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-6 right-6 z-[60] md:left-auto md:max-w-md"
+          >
+            <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl p-4 flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center shrink-0">
+                <Zap className="text-indigo-600 dark:text-indigo-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Installer DevGabon</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Accédez au réseau plus rapidement depuis votre écran d'accueil.</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleInstallClick}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                >
+                  Installer
+                </button>
+                <button
+                  onClick={() => setShowInstallBanner(false)}
+                  className="px-4 py-2 bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-400 rounded-lg text-xs font-bold hover:bg-slate-200 dark:hover:bg-dark-surface transition-colors"
+                >
+                  Plus tard
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-slate-100 dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-10 h-10 object-contain" />
+            <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-10 h-10 rounded-lg object-cover" />
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
               DevGabon
             </span>
@@ -142,13 +219,13 @@ export default function LandingPage({ user }: { user: User | null }) {
             </button>
 
             {/* Install Button */}
-            {isInstallable && (
+            {(isInstallable || (isIOS && !isStandalone)) && (
               <button 
                 onClick={handleInstallClick}
                 className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] sm:text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all active:scale-95 whitespace-nowrap"
               >
                 <Zap size={14} className="animate-pulse" />
-                {t('sidebar.install')}
+                {isIOS ? "Installer" : t('sidebar.install')}
               </button>
             )}
 
@@ -261,8 +338,18 @@ export default function LandingPage({ user }: { user: User | null }) {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-40 pb-20 px-4 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
+      <section className="pt-40 pb-20 px-4 overflow-hidden relative">
+        {/* Mobile/Tablet Background Image */}
+        <div className="absolute inset-0 lg:hidden z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-white dark:from-dark-bg/60 dark:via-dark-bg/40 dark:to-dark-bg z-10" />
+          <img 
+            src="/assets/Dev_4.png" 
+            alt="" 
+            className="w-full h-full object-cover opacity-70 dark:opacity-40"
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
               initial="hidden"
@@ -304,12 +391,12 @@ export default function LandingPage({ user }: { user: User | null }) {
 
               <motion.div variants={itemVariants} className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">
-                  {[1, 2, 3, 4].map((i) => (
+                  {['Dev.jpg', 'Dev_2.png', 'Dev_3.jpg', 'Dev_4.png'].map((img, i) => (
                     <img 
                       key={i}
-                      src={`https://i.pravatar.cc/100?img=${i + 10}`} 
+                      src={`/assets/${img}`} 
                       alt="User" 
-                      className="w-12 h-12 rounded-full border-4 border-white shadow-sm"
+                      className="w-12 h-12 rounded-full border-4 border-white dark:border-dark-surface shadow-sm object-cover"
                     />
                   ))}
                 </div>
@@ -327,33 +414,12 @@ export default function LandingPage({ user }: { user: User | null }) {
               className="relative hidden lg:block"
             >
               <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-[3rem] blur-3xl opacity-20 animate-pulse" />
-              <div className="relative bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl overflow-hidden aspect-square flex items-center justify-center p-12">
-                <div className="grid grid-cols-2 gap-8 w-full">
-                  <div className="space-y-8">
-                    <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100 transform -rotate-3 hover:rotate-0 transition-transform">
-                      <Code2 size={40} className="text-indigo-600 mb-4" />
-                      <div className="h-2 w-20 bg-indigo-200 rounded-full mb-2" />
-                      <div className="h-2 w-12 bg-indigo-100 rounded-full" />
-                    </div>
-                    <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 transform rotate-6 hover:rotate-0 transition-transform">
-                      <Library size={40} className="text-amber-600 mb-4" />
-                      <div className="h-2 w-24 bg-amber-200 rounded-full mb-2" />
-                      <div className="h-2 w-16 bg-amber-100 rounded-full" />
-                    </div>
-                  </div>
-                  <div className="space-y-8 pt-12">
-                    <div className="p-6 bg-purple-50 rounded-3xl border border-purple-100 transform rotate-3 hover:rotate-0 transition-transform">
-                      <Users size={40} className="text-purple-600 mb-4" />
-                      <div className="h-2 w-16 bg-purple-200 rounded-full mb-2" />
-                      <div className="h-2 w-20 bg-purple-100 rounded-full" />
-                    </div>
-                    <div className="p-6 bg-pink-50 rounded-3xl border border-pink-100 transform -rotate-6 hover:rotate-0 transition-transform">
-                      <Briefcase size={40} className="text-pink-600 mb-4" />
-                      <div className="h-2 w-12 bg-pink-200 rounded-full mb-2" />
-                      <div className="h-2 w-24 bg-pink-100 rounded-full" />
-                    </div>
-                  </div>
-                </div>
+              <div className="relative bg-white dark:bg-dark-surface rounded-[2.5rem] border border-slate-200 dark:border-dark-border shadow-2xl overflow-hidden aspect-square">
+                <img 
+                  src="/assets/Dev_4.png" 
+                  alt="DevGabon Hero" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </motion.div>
           </div>
@@ -688,7 +754,7 @@ export default function LandingPage({ user }: { user: User | null }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-12 sm:mb-16">
             <div className="sm:col-span-2 lg:col-span-2 space-y-6">
               <div className="flex items-center gap-2">
-                <img src="/assets/logo-dev-gabon-pro.png" alt="logo-dev-gabon-pro.png" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+                <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover" />
                 <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">DevGabon</span>
               </div>
               <p className="text-slate-400 dark:text-slate-500 max-w-sm leading-relaxed text-sm sm:text-base">

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Code2, Github, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Code2, Github, Mail, Lock, User as UserIcon, ArrowLeft, Home, LogOut } from 'lucide-react';
 import { logActivity } from '../lib/activity';
 
 export default function AuthPage() {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,7 @@ export default function AuthPage() {
       setLoading(true);
       setError('');
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
       
       // Check if user exists in Firestore
@@ -51,6 +54,8 @@ export default function AuthPage() {
         setError("Cette méthode de connexion n'est pas activée dans la console Firebase. Veuillez activer 'Email/Password' et 'Google' dans l'onglet Authentication.");
       } else if (err.code === 'auth/unauthorized-domain') {
         setError("Ce domaine n'est pas autorisé dans la console Firebase. Veuillez ajouter votre domaine Netlify dans Authentication > Settings > Authorized domains.");
+      } else if (err.code === 'auth/invalid-credential') {
+        setError("Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.");
       } else {
         setError(err.message || 'Une erreur est survenue lors de la connexion.');
       }
@@ -98,6 +103,12 @@ export default function AuthPage() {
       if (err.code === 'auth/email-already-in-use') {
         setError('Cet email est déjà utilisé. Veuillez vous connecter.');
         setIsLogin(true);
+      } else if (err.code === 'auth/invalid-credential') {
+        setError("Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.");
+      } else if (err.code === 'auth/weak-password') {
+        setError("Le mot de passe est trop court. Il doit contenir au moins 6 caractères.");
+      } else if (err.code === 'auth/invalid-email') {
+        setError("L'adresse email n'est pas valide.");
       } else {
         setError(err.message || 'Une erreur est survenue.');
       }
@@ -107,7 +118,29 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300 relative">
+      {/* Back to Home Button */}
+      <div className="absolute top-4 left-4 sm:top-8 sm:left-8 flex gap-2">
+        <button
+          onClick={() => navigate('/')}
+          className="group flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30 transition-all shadow-sm hover:shadow-md active:scale-95"
+        >
+          <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1 hidden sm:block" />
+          <Home size={18} className="sm:hidden" />
+          <span className="hidden sm:inline">Retour à l'accueil</span>
+        </button>
+
+        {auth.currentUser && (
+          <button
+            onClick={() => signOut(auth)}
+            className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all shadow-sm active:scale-95"
+          >
+            <LogOut size={18} />
+            <span className="hidden sm:inline">Se déconnecter</span>
+          </button>
+        )}
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">

@@ -31,25 +31,43 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   useEffect(() => {
+    let unsubscribeDoc: (() => void) | null = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (unsubscribeDoc) {
+        unsubscribeDoc();
+        unsubscribeDoc = null;
+      }
+
       if (user) {
         const userRef = doc(db, 'users', user.uid);
-        const unsubscribeDoc = onSnapshot(userRef, (doc) => {
+        unsubscribeDoc = onSnapshot(userRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
-            if (data.theme && data.theme !== theme) {
-              setThemeState(data.theme as Theme);
-              localStorage.setItem('theme', data.theme);
+            if (data.theme) {
+              setThemeState(prevTheme => {
+                if (data.theme !== prevTheme) {
+                  localStorage.setItem('theme', data.theme);
+                  return data.theme as Theme;
+                }
+                return prevTheme;
+              });
             }
           }
         }, (error) => {
-          handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
+          // Only handle error if user is still logged in
+          if (auth.currentUser) {
+            handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
+          }
         });
-        return () => unsubscribeDoc();
       }
     });
-    return () => unsubscribeAuth();
-  }, [theme]);
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeDoc) unsubscribeDoc();
+    };
+  }, []); // Remove theme dependency to avoid multiple listeners
 
   const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';

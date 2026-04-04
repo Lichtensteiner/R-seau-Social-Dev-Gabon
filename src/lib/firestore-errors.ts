@@ -29,15 +29,17 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const currentUser = auth.currentUser;
+  
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
+      userId: currentUser?.uid,
+      email: currentUser?.email,
+      emailVerified: currentUser?.emailVerified,
+      isAnonymous: currentUser?.isAnonymous,
+      tenantId: currentUser?.tenantId,
+      providerInfo: currentUser?.providerData.map(provider => ({
         providerId: provider.providerId,
         displayName: provider.displayName,
         email: provider.email,
@@ -47,6 +49,17 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
+
   console.error('Firestore Error: ', JSON.stringify(errInfo));
+
+  // If it's a permission error and the user is not logged in, 
+  // it's likely a session expiration. We should probably just redirect to auth
+  // instead of crashing the whole app with an ErrorBoundary.
+  if (errInfo.error.includes('insufficient permissions') && !currentUser) {
+    console.warn('Permission denied while signed out. Redirecting to auth...');
+    window.location.href = '/auth';
+    return;
+  }
+
   throw new Error(JSON.stringify(errInfo));
 }

@@ -3,11 +3,12 @@ import { User } from 'firebase/auth';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
-import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library, X, Users, Trophy, Medal } from 'lucide-react';
+import { User as UserIcon, Mail, MapPin, Github, Code2, Save, Edit2, Star, GitBranch, MessageSquare, Heart, Briefcase, Linkedin, Globe, UserPlus, UserMinus, Camera, Loader2, BookOpen, Library, X, Users, Trophy, Medal, AlertCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { logActivity } from '../lib/activity';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatDate } from '../lib/date-utils';
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 interface Repo {
   id: number;
@@ -104,11 +105,11 @@ export default function ProfilePage({ user }: { user: User }) {
             bio: data.bio || '',
             location: data.location || '',
             status: data.status || '',
-            experienceYears: data.experienceYears?.toString() || '',
+            experienceYears: data.experienceYears !== undefined && data.experienceYears !== null ? data.experienceYears.toString() : '',
             githubUrl: data.githubUrl || '',
             linkedInUrl: data.linkedInUrl || '',
             portfolioUrl: data.portfolioUrl || '',
-            skills: data.skills ? data.skills.join(', ') : '',
+            skills: Array.isArray(data.skills) ? data.skills.join(', ') : (typeof data.skills === 'string' ? data.skills : ''),
             photoURL: data.photoURL || ''
           });
         }
@@ -181,10 +182,13 @@ export default function ProfilePage({ user }: { user: User }) {
     fetchRepos();
   }, [profile?.githubUrl, showAllRepos]);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     try {
       setSaving(true);
-      const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(Boolean);
+      setSaveError(null);
+      const skillsArray = (formData.skills || '').split(',').map(s => s.trim()).filter(Boolean);
       
       const updateData: any = {
         displayName: formData.displayName,
@@ -198,7 +202,12 @@ export default function ProfilePage({ user }: { user: User }) {
       if (formData.lastName) updateData.lastName = formData.lastName;
       if (formData.pseudo) updateData.pseudo = formData.pseudo;
       if (formData.status) updateData.status = formData.status;
-      if (formData.experienceYears) updateData.experienceYears = parseInt(formData.experienceYears);
+      if (formData.experienceYears) {
+        const parsed = parseInt(formData.experienceYears);
+        if (!isNaN(parsed)) {
+          updateData.experienceYears = parsed;
+        }
+      }
       if (formData.linkedInUrl) updateData.linkedInUrl = formData.linkedInUrl;
       if (formData.portfolioUrl) updateData.portfolioUrl = formData.portfolioUrl;
       if (formData.photoURL) updateData.photoURL = formData.photoURL;
@@ -211,7 +220,8 @@ export default function ProfilePage({ user }: { user: User }) {
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Erreur lors de la mise à jour du profil.");
+      setSaveError("Erreur lors de la mise à jour du profil.");
+      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
     } finally {
       setSaving(false);
     }
@@ -223,6 +233,7 @@ export default function ProfilePage({ user }: { user: User }) {
 
     try {
       setUploadingImage(true);
+      setSaveError(null);
       const storageRef = ref(storage, `profile_pictures/${user.uid}_${Date.now()}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
@@ -236,7 +247,8 @@ export default function ProfilePage({ user }: { user: User }) {
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Erreur lors du téléchargement de l'image.");
+      setSaveError("Erreur lors du téléchargement de l'image.");
+      handleFirestoreError(error, OperationType.WRITE, `profile_pictures/${user.uid}`);
     } finally {
       setUploadingImage(false);
     }
@@ -550,7 +562,7 @@ export default function ProfilePage({ user }: { user: User }) {
                     Compétences techniques
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {profile.skills.map(skill => (
+                    {(profile.skills || []).map(skill => (
                       <span key={skill} className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-sm font-semibold rounded-xl border border-indigo-100 dark:border-indigo-900/30">
                         {skill}
                       </span>
@@ -677,7 +689,15 @@ export default function ProfilePage({ user }: { user: User }) {
               )}
             </div>
           ) : (
-            <div className="space-y-6">
+            <>
+              {saveError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                  <AlertCircle size={16} />
+                  {saveError}
+                </div>
+              )}
+
+              <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom d'affichage *</label>
@@ -812,7 +832,8 @@ export default function ProfilePage({ user }: { user: User }) {
                 />
               </div>
             </div>
-          )}
+          </>
+        )}
         </div>
       </div>
 

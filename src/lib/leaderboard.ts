@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { handleFirestoreError, OperationType } from './firestore-errors';
 
 export type PointAction = 
   | 'post_create' 
@@ -44,6 +45,6 @@ export async function updateLeaderboardPoints(userId: string, displayName: strin
       });
     }
   } catch (error) {
-    console.error("Error updating leaderboard points:", error);
+    handleFirestoreError(error, OperationType.WRITE, `leaderboard/${userId}`);
   }
 }

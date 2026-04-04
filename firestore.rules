@@ -321,7 +321,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['userId', 'displayName', 'photoURL', 'points', 'rank', 'badges', 'updatedAt']) &&
              validStringLength('userId', 1, 128) &&
              isValidOptionalString('displayName', 0, 200) &&
-             isValidOptionalString('photoURL', 0, 2000) &&
+             (!( 'photoURL' in data) || data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 2000)) &&
              data.points is number &&
              (!('rank' in data) || data.rank is number) &&
              (!('badges' in data) || data.badges is list) &&
@@ -388,11 +388,14 @@ service cloud.firestore {
     }
 
     function isValidTestResult(data) {
-      return hasOnlyAllowedFields(['userId', 'testId', 'score', 'status', 'completedAt']) &&
+      return hasOnlyAllowedFields(['userId', 'testId', 'testTitle', 'displayName', 'score', 'passed', 'status', 'completedAt']) &&
              validStringLength('userId', 1, 128) &&
              validStringLength('testId', 1, 128) &&
+             validStringLength('testTitle', 1, 200) &&
+             validStringLength('displayName', 1, 200) &&
              data.score is number &&
-             data.status in ['Passed', 'Failed', 'In-Progress'] &&
+             data.passed is bool &&
+             data.status in ['Passed', 'Failed', 'In-Progress', 'Completed'] &&
              data.completedAt is timestamp;
     }
 
