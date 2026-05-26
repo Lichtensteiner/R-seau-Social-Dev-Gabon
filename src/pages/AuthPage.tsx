@@ -53,7 +53,8 @@ export default function AuthPage() {
       if (err.code === 'auth/operation-not-allowed') {
         setError("Cette méthode de connexion n'est pas activée dans la console Firebase. Veuillez activer 'Email/Password' et 'Google' dans l'onglet Authentication.");
       } else if (err.code === 'auth/unauthorized-domain') {
-        setError("Ce domaine n'est pas autorisé dans la console Firebase. Veuillez ajouter votre domaine Netlify dans Authentication > Settings > Authorized domains.");
+        const currentDomain = window.location.hostname;
+        setError(`Ce domaine (${currentDomain}) n'est pas autorisé dans la console Firebase. Veuillez l'ajouter dans votre console Firebase (Authentication > Settings > Authorized domains).`);
       } else if (err.code === 'auth/invalid-credential') {
         setError("Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.");
       } else {
