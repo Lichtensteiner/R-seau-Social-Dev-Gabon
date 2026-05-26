@@ -155,8 +155,8 @@ export default function LandingPage({ user }: { user: User | null }) {
             className="fixed bottom-6 left-6 right-6 z-[60] md:left-auto md:max-w-md"
           >
             <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl p-4 flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center shrink-0">
-                <Zap className="text-indigo-600 dark:text-indigo-400" size={24} />
+              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-sm">
+                <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex-1">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">Installer DevGabon</h4>

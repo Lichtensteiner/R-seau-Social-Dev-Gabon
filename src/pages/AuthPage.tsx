@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Code2, Github, Mail, Lock, User as UserIcon, ArrowLeft, Home, LogOut } from 'lucide-react';
@@ -104,14 +104,33 @@ export default function AuthPage() {
         setError('Cet email est déjà utilisé. Veuillez vous connecter.');
         setIsLogin(true);
       } else if (err.code === 'auth/invalid-credential') {
-        setError("Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.");
+        setError("Email ou mot de passe incorrect. Si vous vous êtes inscrit avec Google, vous devez définir un mot de passe via 'Mot de passe oublié'.");
       } else if (err.code === 'auth/weak-password') {
         setError("Le mot de passe est trop court. Il doit contenir au moins 6 caractères.");
       } else if (err.code === 'auth/invalid-email') {
         setError("L'adresse email n'est pas valide.");
+      } else if (err.code === 'auth/too-many-requests') {
+        setError("Trop de tentatives infructueuses. Votre compte a été temporairement bloqué. Réessayez plus tard ou réinitialisez votre mot de passe.");
       } else {
         setError(err.message || 'Une erreur est survenue.');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Veuillez saisir votre adresse e-mail pour réinitialiser votre mot de passe.");
+      return;
+    }
+    try {
+      setLoading(true);
+      await sendPasswordResetEmail(auth, email);
+      alert("Un e-mail de réinitialisation a été envoyé à " + email);
+    } catch (err: any) {
+      console.error(err);
+      setError("Erreur lors de l'envoi de l'e-mail : " + err.message);
     } finally {
       setLoading(false);
     }
@@ -143,9 +162,7 @@ export default function AuthPage() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Code2 size={32} className="text-white" />
-          </div>
+          <img src="/assets/Dev_4.png" alt="DevGabon Logo" className="w-16 h-16 rounded-2xl shadow-lg object-cover" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white">
           Réseau Social Dev Gabon
@@ -234,7 +251,18 @@ export default function AuthPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Mot de passe</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Mot de passe</label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                )}
+              </div>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-400" />

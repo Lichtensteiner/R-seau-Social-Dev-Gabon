@@ -37,39 +37,22 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Test connection to Firestore
-    const testConnection = async () => {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration. The client is offline.");
-        }
-      }
-    };
-    testConnection();
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         // Update last login and log activity
         try {
           const userRef = doc(db, 'users', currentUser.uid);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            const userData = userSnap.data() as UserProfile;
-            try {
-              await updateDoc(userRef, {
-                lastLoginAt: serverTimestamp()
-              });
-            } catch (err) {
-              handleFirestoreError(err, OperationType.UPDATE, `users/${currentUser.uid}`);
-            }
-            // Log activity only if it's been a while or just for this session
-            // For now, let's log every "session start" (refresh)
-            await logActivity(currentUser.uid, userData.displayName, 'login', 'S\'est connecté au système');
-          }
+          // Just try to update if it exists, without waiting for the getDoc which might hang
+          updateDoc(userRef, {
+            lastLoginAt: serverTimestamp()
+          }).catch(err => {
+            console.warn("Could not update last login (might be a new user):", err.message);
+          });
+          
+          // Log activity in background
+          logActivity(currentUser.uid, currentUser.displayName || currentUser.email || 'Utilisateur', 'login', 'S\'est connecté au système');
         } catch (error) {
-          console.error("Error updating last login:", error);
+          console.error("Error in auth state change logic:", error);
         }
       }
       setUser(currentUser);
@@ -86,8 +69,11 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#050505]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium animate-pulse">Chargement de DevGabon...</p>
+        </div>
       </div>
     );
   }
